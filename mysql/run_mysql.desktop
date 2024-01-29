@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Run Docker Compose
+Comment=Run Docker Compose setup
+Exec=./mysql-run.sh
+Icon=utilities-terminal
+Terminal=true
+Type=Application
+Categories=Utility;
