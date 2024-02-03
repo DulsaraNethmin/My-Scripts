@@ -34,5 +34,7 @@ insert into Customers (FirstName, LastName, Email) values ('Michael', 'Taylor',
 
 select * from Customers;
 
+EXEC sp_help 'Customers';
+
 
 
