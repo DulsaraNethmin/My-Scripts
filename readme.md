@@ -7,3 +7,14 @@ I'll update this with my other handy scripts Sooner.
 
 1. MySQL server with phpmyadmin GUI.
 2. MSSQL server docker-compose script.
+
+## **How To RUN**
+
+### **Windows**
+
+```
+Open `mysql-run.bat` file.
+repalce `docker-compose.yml` file path.
+save the file.
+double click and run.
+```
