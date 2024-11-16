@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  pytorch:
+    image: pytorch/pytorch:latest
+    container_name: pytorch-container
+    volumes:
+      - ./workspace:/workspace
+    ports:
+      - "8888:8888"  # Jupyter Notebook port
+      - "6006:6006"  # TensorBoard port (if needed)
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
+    command: >
+      /bin/bash -c "
+      jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root --NotebookApp.token='' --NotebookApp.password=''
+      "
+    runtime: nvidia  # Use GPU if available
+
+volumes:
+  workspace:
+    driver: local

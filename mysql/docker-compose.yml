@@ -23,12 +23,12 @@ services:
     image: phpmyadmin/phpmyadmin:latest
     restart: always
     environment:
-      PMA_HOST: db
+      PMA_HOST: "db"
       PMA_USER: root
-      PMA_PASSWORD: root
+      PMA_PASSWORD: 11111111
       UPLOAD_LIMIT: 300M
     ports:
-      - "8080:80"
+      - "8081:80"
     depends_on:
       - db
     networks:
@@ -36,6 +36,7 @@ services:
 
 volumes:
   my-db:
+
 
 networks:
   sql-network:
