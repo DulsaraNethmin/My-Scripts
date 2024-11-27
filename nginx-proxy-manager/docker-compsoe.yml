@@ -1,0 +1,30 @@
+  GNU nano 7.2                                                                                    docker-compose.yml
+services:
+  nginx-proxy-manager:
+    image: jc21/nginx-proxy-manager:latest  # Use the official Nginx Proxy Manager image
+    container_name: nginx-proxy-manager
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "81:81" # Nginx Proxy Manager UI
+      - "443:443"
+    volumes:
+      - ./data:/data
+      - ./letsencrypt:/etc/letsencrypt
+    networks:
+      - proxy
+
+  frontend:
+    image: nethmindulsara/nginx-server:v1
+    container_name: frontend
+    restart: unless-stopped
+    volumes:
+      - ./frontend:/usr/share/nginx/html
+    expose:
+      - "80"
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: false

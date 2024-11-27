@@ -1,0 +1,4 @@
+- We setup Nginx-Proxy-Manager with Selef Hosted FE and BE
+- FE need to be static exported project.
+- We put static export files to `./frontend` directory and mount it to the nginx server's `/usr/share/nginx/html` directory to serve.
+- to access `nginx-proxy-manager`, we need to allow port `81` for ingress connections.
