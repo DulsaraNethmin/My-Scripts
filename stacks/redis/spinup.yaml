@@ -1,0 +1,16 @@
+name: redis
+description: Redis 7 with RedisInsight
+category: database
+primary: redis
+cli: redis-cli --no-auth-warning -a ${REDIS_PASSWORD}
+gui:
+  service: redisinsight
+  url: http://localhost:${REDISINSIGHT_PORT}
+  login: no login; the redis connection is pre-registered
+url: redis://:${REDIS_PASSWORD}@localhost:${REDIS_PORT}
+ports:
+  - name: REDIS_PORT
+    default: 6379
+  - name: REDISINSIGHT_PORT
+    default: 8083
+profiles: [gui]
