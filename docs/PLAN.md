@@ -165,7 +165,21 @@ ports:
   - name: PGADMIN_PORT
     default: 8080
 profiles: [gui]
+
+# Optional, for a stack whose services all sit behind profiles (stacks/pytorch,
+# where the CPU and GPU services share ports so neither can start by default):
+default_profiles: [cpu]       # what `up` selects when the user selects nothing
+gpu:                          # what `up --gpu` swaps in
+  profile: gpu
+  service: jupyter-gpu
 ```
+
+`name`, `description`, `category`, `primary`, `url` and at least one port are required;
+`name` must match the directory. A `gui` whose service is a *separate* container must be
+behind the `gui` profile — that is what makes it optional. A `gui` served by the primary
+service itself (nginx, Nginx Proxy Manager, JupyterLab) has nothing to gate and declares
+no profile. `internal/catalog` and `scripts/lint-stacks.sh` enforce the same rules, and
+unknown keys are an error rather than being ignored.
 
 Compose conventions (applied to every stack):
 

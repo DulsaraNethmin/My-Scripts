@@ -109,6 +109,10 @@ reach outside its own package directory, so main owns the `embed.FS` and hands t
 subtree to `catalog.New`. Commands reach it through the command context
 (`catalog.FromContext`), which keeps them testable against a fixture catalog.
 
+`spinup.yaml` is parsed strictly (unknown keys are an error) by `internal/catalog`,
+which enforces the same rules as `scripts/lint-stacks.sh`. Change one and change the
+other, or a stack can pass CI and fail in the CLI.
+
 **Stacks.** Every stack is a folder of four files — `compose.yaml`, `.env.example`,
 `spinup.yaml` (metadata the CLI reads), `README.md` (shown by `spinup info`). The CLI
 is fully generic: adding a stack never means editing Go code. See `docs/PLAN.md` §4
@@ -145,6 +149,10 @@ location; user state lives in `~/.spinup/`.
   as healthy rather than embedding credentials in the probe.
 - Pin to a tag that exists — `docker manifest inspect <image>:<tag>` before
   writing it into a compose file. PLAN's suggested tags are not all real.
+- A stack's GUI is only behind the `gui` profile when it is a *separate* container.
+  In `nginx-static`, `nginx-proxy-manager` and `pytorch` the GUI *is* the primary
+  service, so those stacks correctly declare no `gui` profile. Rules derived from
+  `stacks/postgres` alone will reject three of the eight stacks.
 - `//go:embed all:stacks` — the `all:` prefix is load-bearing. Without it `go:embed`
   silently skips every file whose name starts with a dot, which is every stack's
   `.env.example`. `main_test.go` compares the embedded tree against `stacks/` on

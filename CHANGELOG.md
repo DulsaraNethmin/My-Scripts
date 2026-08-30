@@ -66,5 +66,14 @@ defaults, and GUIs on non-colliding `80xx` ports recorded in `docs/PORTS.md`.
   found, `4` compose failed.
 - CI now vets, tests, lints and cross-compiles all six release targets, and
   asserts the embedded catalog matches `stacks/` on disk.
+- `spinup.yaml` parsing: the schema is decoded strictly, so an unknown or
+  mistyped key is an error rather than being silently ignored, and every rule
+  a stack must satisfy is reported in one pass. `internal/catalog` and
+  `scripts/lint-stacks.sh` now enforce the same rules.
+- Stacks materialise into `~/.spinup/stacks/<name>/` with their env file seeded
+  from `.env.example` — never overwriting a file that is already there, because
+  the point of writing them out is that they can be edited. `~/.spinup/stacks`
+  shadows the copies embedded in the binary. `SPINUP_HOME` overrides the
+  location.
 
 [unreleased]: https://github.com/DulsaraNethmin/My-Scripts/commits/main

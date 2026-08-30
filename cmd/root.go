@@ -17,6 +17,7 @@ import (
 	"github.com/spf13/cobra"
 
 	"github.com/DulsaraNethmin/spinup/internal/catalog"
+	"github.com/DulsaraNethmin/spinup/internal/config"
 	"github.com/DulsaraNethmin/spinup/internal/ui"
 )
 
@@ -63,7 +64,7 @@ func Execute(b Build, stacks fs.FS) int {
 
 	// Commands read the catalog off the context, so tests can swap in a stack
 	// tree without touching the embedded one.
-	ctx = catalog.NewContext(ctx, catalog.New(stacks))
+	ctx = catalog.NewContext(ctx, userCatalog(stacks))
 
 	if err := newRootCmd(b).ExecuteContext(ctx); err != nil {
 		fmt.Fprintln(os.Stderr, ui.Error("error:"), err)
@@ -83,6 +84,19 @@ func codeFor(err error) int {
 		return ExitNotFound
 	}
 	return ExitUsage
+}
+
+// userCatalog layers ~/.spinup/stacks over the stacks embedded in the binary,
+// so a stack the user has edited wins over the shipped copy. Not being able to
+// find a home directory is not fatal — it only means there are no user stacks.
+func userCatalog(embedded fs.FS) *catalog.Catalog {
+	cat := catalog.New(embedded)
+
+	paths, err := config.Default()
+	if err != nil {
+		return cat
+	}
+	return cat.WithUserStacks(os.DirFS(paths.StacksDir()))
 }
 
 func newRootCmd(b Build) *cobra.Command {
