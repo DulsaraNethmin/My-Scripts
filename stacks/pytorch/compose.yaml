@@ -1,0 +1,60 @@
+name: spinup-pytorch
+
+# This stack has TWO mutually exclusive services on the same ports, so both
+# sit behind a profile and neither starts by default:
+#
+#   docker compose --profile cpu up -d     # anywhere
+#   docker compose --profile gpu up -d     # needs an NVIDIA GPU + container toolkit
+#
+# spinup picks `cpu` automatically (spinup.yaml: default_profiles) and swaps to
+# `gpu` when you pass --gpu.
+
+x-jupyter: &jupyter
+  restart: unless-stopped
+  environment: &jupyter-env
+    # Jupyter is token-authenticated. The old stack disabled the token
+    # entirely while listening on 0.0.0.0, which left an unauthenticated
+    # remote-code-execution endpoint open to the whole network.
+    JUPYTER_TOKEN: ${JUPYTER_TOKEN:-spinup}
+    JUPYTER_ENABLE_LAB: "yes"
+    # Let `pip install` inside the container persist across restarts.
+    NB_USER: jovyan
+  ports:
+    - "${JUPYTER_PORT:-8888}:8888"
+    # TensorBoard is not started automatically; run it from a notebook
+    # terminal (`tensorboard --logdir ... --host 0.0.0.0`) and it appears here.
+    - "${TENSORBOARD_PORT:-6006}:6006"
+  volumes:
+    - pytorch-work:/home/jovyan/work
+  healthcheck:
+    test: ["CMD-SHELL", "python3 -c \"import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8888/api', timeout=5).status==200 else 1)\""]
+    interval: 10s
+    timeout: 10s
+    retries: 20
+    start_period: 30s
+
+services:
+  jupyter:
+    <<: *jupyter
+    profiles: [cpu]
+    image: quay.io/jupyter/pytorch-notebook:pytorch-2.13.0
+
+  jupyter-gpu:
+    <<: *jupyter
+    profiles: [gpu]
+    # Upstream lags the CPU build; this is the newest CUDA tag published.
+    image: quay.io/jupyter/pytorch-notebook:cuda12-pytorch-2.11.0
+    environment:
+      <<: *jupyter-env
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+volumes:
+  pytorch-work:
