@@ -144,6 +144,17 @@ func TestCLILifecycle(t *testing.T) {
 		t.Errorf("list does not show the stack as running:\n%s", out)
 	}
 
+	// cli and shell exec into the running container. Their output goes to the
+	// process's own stdout — an interactive client needs the real terminal, not
+	// a buffer — so what is asserted here is that they reached the container
+	// and came back cleanly.
+	if out, err = run("cli", stack, "--", "ping"); err != nil {
+		t.Fatalf("cli: %v\n%s", err, out)
+	}
+	if out, err = run("shell", stack, "--shell", "true"); err != nil {
+		t.Fatalf("shell: %v\n%s", err, out)
+	}
+
 	project := compose.ProjectPrefix + stack
 
 	if out, err = run("down", stack); err != nil {
@@ -151,6 +162,14 @@ func TestCLILifecycle(t *testing.T) {
 	}
 	if n := volumeCount(t, project); n == 0 {
 		t.Error("down deleted the stack's data")
+	}
+
+	// With the stack stopped, cli says so rather than passing compose's
+	// "service is not running" through.
+	if _, err := run("cli", stack); err == nil {
+		t.Error("cli on a stopped stack succeeded")
+	} else if !strings.Contains(err.Error(), "not running") {
+		t.Errorf("cli on a stopped stack says: %v", err)
 	}
 
 	if out, err = run("destroy", "-y", stack); err != nil {

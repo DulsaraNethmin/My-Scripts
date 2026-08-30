@@ -126,6 +126,47 @@ func (r *Runner) Logs(ctx context.Context, p Project, opts LogsOptions) error {
 	return r.Run(ctx, p, opts.Args()...)
 }
 
+// ExecOptions are the arguments of `docker compose exec`.
+type ExecOptions struct {
+	Service string
+	Command []string
+
+	// NoTTY is compose's -T. Compose allocates a TTY by default and fails
+	// outright when stdin is not one, which is what happens the moment spinup
+	// is run from a script, a CI job or a test.
+	NoTTY bool
+
+	// User runs the command as somebody other than the image's default user.
+	User string
+
+	// Env are VAR=value pairs set for the command inside the container.
+	Env []string
+}
+
+// Args are the compose arguments these options produce.
+func (o ExecOptions) Args() []string {
+	args := []string{"exec"}
+
+	if o.NoTTY {
+		args = append(args, "--no-TTY")
+	}
+	if o.User != "" {
+		args = append(args, "--user", o.User)
+	}
+	for _, e := range o.Env {
+		args = append(args, "--env", e)
+	}
+
+	args = append(args, o.Service)
+	return append(args, o.Command...)
+}
+
+// Exec runs a command inside a running service, with spinup's own terminal
+// handed to it — see Attach.
+func (r *Runner) Exec(ctx context.Context, p Project, opts ExecOptions) error {
+	return r.Attach(ctx, p, opts.Args()...)
+}
+
 // Config returns the stack's fully resolved compose file, which is also the
 // cheapest way to prove a stack is valid without starting anything.
 func (r *Runner) Config(ctx context.Context, p Project, args ...string) ([]byte, error) {

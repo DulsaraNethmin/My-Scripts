@@ -168,4 +168,27 @@ defaults, and GUIs on non-colliding `80xx` ports recorded in `docs/PORTS.md`.
   it (PLAN §7.6). Binaries print a `v`-prefixed version so what
   `spinup version` shows is exactly the tag it came from.
 
+### Added — connect commands (Phase 4)
+
+- `spinup shell <stack> [service]` opens a shell in a running container —
+  bash when the image has it, sh otherwise — and `spinup cli <stack>` runs the
+  stack's own client (psql, mysql, mongosh, redis-cli) already pointed at the
+  database and authenticated. Both hand the terminal straight to the
+  container: `internal/compose` grew an `Attach` that lets the child inherit
+  stdin, stdout and stderr, because a copy loop is not a TTY and psql behind
+  one cannot read a password, size its window or run a pager.
+- The `cli` template is split into arguments *before* its `${VARS}` are
+  expanded, so a password containing a space stays one argument and one
+  containing a quote or a semicolon cannot become a shell injection — no shell
+  is involved at any point. Only the client's name is echoed, never the
+  expanded command, which carries the password.
+- `spinup url <stack>` prints the connection string, `--gui` the web
+  interface's address; `spinup open <stack>` launches that address in the
+  browser with the login beside it (`--print` for a headless machine).
+  `spinup info <stack>` is the stack's page: what it is, its ports,
+  credentials and addresses, then its README.
+- A command that needs a running stack says so — "redis is not running —
+  start it with `spinup up redis`" — rather than passing compose's own
+  "service is not running" through.
+
 [unreleased]: https://github.com/DulsaraNethmin/My-Scripts/commits/main

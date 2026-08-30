@@ -95,6 +95,32 @@ func TestDownVolumes(t *testing.T) {
 	}
 }
 
+// exec is how `spinup shell` and `spinup cli` reach a container. -T is the
+// flag that matters: compose asks for a TTY by default and fails outright
+// without one, which is every scripted invocation.
+func TestExecArgs(t *testing.T) {
+	got := strings.Join(compose.ExecOptions{
+		Service: "postgres",
+		Command: []string{"psql", "-U", "spinup"},
+		NoTTY:   true,
+		User:    "root",
+		Env:     []string{"PAGER=cat"},
+	}.Args(), " ")
+
+	for _, want := range []string{"exec", "--no-TTY", "--user root", "--env PAGER=cat", "postgres psql -U spinup"} {
+		if !strings.Contains(got, want) {
+			t.Errorf("Exec args %q are missing %q", got, want)
+		}
+	}
+
+	// The service comes last, before the command: anything after it is the
+	// command's own, and a flag that lands there is passed to the wrong program.
+	plain := compose.ExecOptions{Service: "redis", Command: []string{"redis-cli", "ping"}}.Args()
+	if want := []string{"exec", "redis", "redis-cli", "ping"}; !slices.Equal(plain, want) {
+		t.Errorf("Exec args = %v, want %v", plain, want)
+	}
+}
+
 func TestLogsArgs(t *testing.T) {
 	opts := compose.LogsOptions{Follow: true, Tail: 100, Services: []string{"postgres"}}
 
