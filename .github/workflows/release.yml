@@ -39,6 +39,20 @@ jobs:
 
       - uses: sigstore/cosign-installer@v3
 
+      # Fail before anything is published rather than after: GoReleaser pushes
+      # the Homebrew cask and the Scoop manifest to two other repositories, and
+      # a missing PAT would only surface once the release itself already exists.
+      - name: the tap token is present
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          TAP_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN }}
+        run: |
+          if [ -z "$TAP_TOKEN" ]; then
+            echo "TAP_GITHUB_TOKEN is not set, so the cask and the Scoop manifest"
+            echo "cannot be pushed. docs/RELEASING.md has how to create it."
+            exit 1
+          fi
+
       - uses: goreleaser/goreleaser-action@v6
         with:
           distribution: goreleaser
@@ -48,6 +62,10 @@ jobs:
             ${{ startsWith(github.ref, 'refs/tags/v') && '' || '--snapshot' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # The workflow's own token can only write to this repository, so the
+          # tap and the bucket need a PAT. One secret feeds both.
+          HOMEBREW_TAP_GITHUB_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN }}
+          SCOOP_BUCKET_GITHUB_TOKEN: ${{ secrets.TAP_GITHUB_TOKEN }}
 
       # Signing is not skipped in snapshot mode, so the manual dry run exercises
       # the cosign path too — with the same workflow identity a tag would use.
@@ -91,6 +109,15 @@ jobs:
           tar -xzf dist/spinup_*_linux_amd64.tar.gz -C /tmp spinup
           /tmp/spinup version
           /tmp/spinup list
+
+      # Generated whether or not they are pushed, so the dry run proves the cask
+      # and the manifest are still produced before a tag depends on them.
+      - name: the cask and the scoop manifest were generated
+        run: |
+          test -f dist/homebrew/Casks/spinup.rb
+          test -f dist/scoop/spinup.json
+          cat dist/homebrew/Casks/spinup.rb
+          cat dist/scoop/spinup.json
 
       - name: upload dry-run archives
         if: ${{ !startsWith(github.ref, 'refs/tags/v') }}

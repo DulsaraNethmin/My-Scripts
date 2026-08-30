@@ -136,6 +136,18 @@ defaults, and GUIs on non-colliding `80xx` ports recorded in `docs/PORTS.md`.
   the result as a workflow artefact, without touching the Releases page.
 - `make release-check` (`goreleaser check`) and a CI job that runs it on every
   push, so the config cannot rot between tags.
+- A tagged release now also updates the two package repositories:
+  `DulsaraNethmin/homebrew-tap` gets a Homebrew **cask** and
+  `DulsaraNethmin/scoop-bucket` a Scoop manifest, both committed by GoReleaser
+  with a PAT (the workflow's own token cannot write to another repository).
+  A cask rather than a formula because GoReleaser deprecated formula
+  generation — the cost is that casks are macOS-only, so Linux is served by
+  the archives and, from 3.3, `install.sh`. The cask strips the quarantine
+  attribute macOS puts on an unsigned download, and `brew uninstall --zap`
+  removes `~/.spinup`, which a plain uninstall leaves alone.
+- `docs/RELEASING.md`: the one-time setup a release needs — the two
+  repositories, the `TAP_GITHUB_TOKEN` secret, the dry run, the tag, and how
+  to back a release out before anyone has installed it.
 - The first spinup release will be `v1.1.0`, not `v0.1.0`: this repository was
   already tagged `v1.0.0` in its My-Scripts days, and a v0 tag would sort below
   it (PLAN §7.6). Binaries print a `v`-prefixed version so what

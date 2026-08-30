@@ -222,8 +222,11 @@ spinup/
 └── Makefile                 # build / test / lint / snapshot-release
 ```
 
-Separate small repos created by GoReleaser: `DulsaraNethmin/homebrew-tap` and
-`DulsaraNethmin/scoop-bucket`.
+Two small repos of your own that GoReleaser commits into (it does not create
+them): `DulsaraNethmin/homebrew-tap` and `DulsaraNethmin/scoop-bucket`. Homebrew
+gets a **cask**, not a formula — GoReleaser deprecated formula generation, and
+casks are macOS-only, so Linux is served by the archives and `install.sh`.
+`docs/RELEASING.md` has the one-time setup.
 
 ---
 
