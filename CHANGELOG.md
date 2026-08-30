@@ -70,6 +70,9 @@ defaults, and GUIs on non-colliding `80xx` ports recorded in `docs/PORTS.md`.
   mistyped key is an error rather than being silently ignored, and every rule
   a stack must satisfy is reported in one pass. `internal/catalog` and
   `scripts/lint-stacks.sh` now enforce the same rules.
+- `spinup list`, `ps`, `logs` and `env`. `list` works without Docker (the status
+  column is all that needs it) and `-q` prints bare names for scripting; `env`
+  shows a stack's resolved ports and credentials, or opens the file in $EDITOR.
 - `spinup up`, `down`, `restart` and `destroy`. `up` materialises the stack,
   seeds its env file, waits for healthy and prints the connection string and
   GUI address; it is idempotent and never removes anything. `down` keeps data,

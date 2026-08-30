@@ -135,6 +135,10 @@ func newRootCmd(b Build) *cobra.Command {
 		newDownCmd(),
 		newRestartCmd(),
 		newDestroyCmd(),
+		newListCmd(),
+		newPSCmd(),
+		newLogsCmd(),
+		newEnvCmd(),
 		newDoctorCmd(docker.New()),
 		newVersionCmd(b),
 	)

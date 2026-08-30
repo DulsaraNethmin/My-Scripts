@@ -206,3 +206,63 @@ func ParsePS(out []byte) ([]Container, error) {
 	}
 	return containers, nil
 }
+
+// ProjectSummary is one compose project as `docker compose ls` reports it.
+type ProjectSummary struct {
+	Name        string `json:"Name"`
+	Status      string `json:"Status"`
+	ConfigFiles string `json:"ConfigFiles"`
+}
+
+// Stack returns the spinup stack this project belongs to, and whether it is
+// one of spinup's at all — the user's own compose projects are none of our
+// business.
+func (p ProjectSummary) Stack() (string, bool) {
+	name, ok := strings.CutPrefix(p.Name, ProjectPrefix)
+	return name, ok
+}
+
+// Running reports whether any of the project's containers are up. compose
+// reports a status like "running(2)" or "exited(1)", and both can appear at
+// once while a stack is coming up.
+func (p ProjectSummary) Running() bool {
+	return strings.Contains(p.Status, "running")
+}
+
+// ListProjects returns every compose project on the machine, spinup's and the
+// user's alike. One call answers "what is running?" for the whole catalog,
+// which is what `spinup list` needs.
+func (r *Runner) ListProjects(ctx context.Context) ([]ProjectSummary, error) {
+	out, err := r.capture(ctx, "", []string{"compose", "ls", "--all", "--format", "json"})
+	if err != nil {
+		return nil, err
+	}
+	return parseProjects(out)
+}
+
+func parseProjects(out []byte) ([]ProjectSummary, error) {
+	trimmed := bytes.TrimSpace(out)
+	if len(trimmed) == 0 {
+		return nil, nil
+	}
+
+	var projects []ProjectSummary
+	if trimmed[0] == '[' {
+		if err := json.Unmarshal(trimmed, &projects); err != nil {
+			return nil, fmt.Errorf("reading compose ls: %w", err)
+		}
+		return projects, nil
+	}
+
+	for _, line := range strings.Split(string(trimmed), "\n") {
+		if strings.TrimSpace(line) == "" {
+			continue
+		}
+		var p ProjectSummary
+		if err := json.Unmarshal([]byte(line), &p); err != nil {
+			return nil, fmt.Errorf("reading compose ls: %w", err)
+		}
+		projects = append(projects, p)
+	}
+	return projects, nil
+}
