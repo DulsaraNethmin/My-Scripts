@@ -70,6 +70,12 @@ defaults, and GUIs on non-colliding `80xx` ports recorded in `docs/PORTS.md`.
   mistyped key is an error rather than being silently ignored, and every rule
   a stack must satisfy is reported in one pass. `internal/catalog` and
   `scripts/lint-stacks.sh` now enforce the same rules.
+- `internal/compose`: every invocation carries the same project name
+  (`spinup-<stack>`), compose file and env file, so a stack can never collide
+  with a project the user made themselves, and compose runs in the stack's own
+  directory so relative build contexts and bind mounts resolve. Integration
+  tests bring redis up through it and assert that `down` keeps volumes while
+  `down --volumes` removes them.
 - `spinup doctor`: the docker CLI, a running daemon and Compose v2, plus
   spinup's own home directory, config and catalog. Compose v1 is reported as a
   failure rather than being accepted — the old scripts in this repo ran on it,
