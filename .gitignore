@@ -1,2 +1,5 @@
 mssql/*.sql
 mysql/*.sql
+# build artefacts (Makefile)
+bin/
+dist/
