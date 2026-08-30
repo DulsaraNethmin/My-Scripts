@@ -260,8 +260,8 @@ Separate small repos created by GoReleaser: `DulsaraNethmin/homebrew-tap` and
 * GoReleaser: darwin/linux/windows × amd64/arm64, checksums, cosign signatures.
 * Homebrew tap + Scoop bucket auto-updated by the release workflow; winget manifest PR script.
 * `install.sh` / `install.ps1`; `spinup update` self-updater; shell completions.
-* First tagged release `v0.1.0` with the Phase-1 catalog. README hero switches to the
-  install one-liner.
+* First tagged release `v1.1.0` with the Phase-1 catalog (§7.6 explains the number).
+  README hero switches to the install one-liner.
 
 ### Phase 4 — CLI polish (1 day)
 
@@ -300,5 +300,7 @@ ship a README before merging.
    *Settled in task 2.1: the module is `github.com/DulsaraNethmin/spinup`.*
 6. **First release number** — the repo already carries a `v1.0.0` tag from its My-Scripts
    days, so `git describe` reports `v1.0.0-N-g<sha>` and a v0.1.0 release would sort
-   *below* a tag that is already published. Either delete/move the old tag, or start the
-   CLI's releases at `v1.1.0`.
+   *below* a tag that is already published.
+   *Settled in task 3.1: the old tag stays where it is and spinup's releases start at
+   `v1.1.0`. Nothing to delete, no link to break; the cost is that 1.x arrives before
+   the command surface is finished, so Phases 4–5 land as minor versions.*

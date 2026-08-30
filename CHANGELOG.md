@@ -107,4 +107,38 @@ defaults, and GUIs on non-colliding `80xx` ports recorded in `docs/PORTS.md`.
   shadows the copies embedded in the binary. `SPINUP_HOME` overrides the
   location.
 
+### Fixed
+
+- `internal/compose` no longer races when the same writer is handed to it for
+  both stdout and stderr. `os/exec` copies the two streams on separate
+  goroutines, so a caller collecting everything into one buffer had both of
+  them writing to it at once — half the output was silently lost. Found by
+  `make test-integration`, which runs with `-race`; the regression test now
+  catches it without Docker.
+
+### Added — release pipeline (Phase 3)
+
+- `.goreleaser.yaml` and `.github/workflows/release.yml`: pushing a `v*` tag
+  builds darwin/linux/windows × amd64/arm64, publishes a GitHub release with
+  `checksums.txt`, and signs that file with cosign keyless — no private key,
+  the signature is bound to the workflow's GitHub OIDC identity. The binaries
+  carry the same `-s -w -X main.version/commit/date` ldflags `make build`
+  uses, and are stamped with the commit time so a rebuild of a tag is
+  byte-identical.
+- Release archives are the binary plus `LICENSE`, `README.md` and
+  `CHANGELOG.md` — deliberately no `stacks/` directory. The catalog is
+  compiled into the binary, so shipping it alongside would hand users a
+  second copy that goes stale the moment they upgrade. The release workflow
+  unpacks every archive and fails if `stacks/` appears in one.
+- Running the release workflow manually (`workflow_dispatch`) is a dry run: it
+  builds all six targets as a snapshot, checks the archives, runs
+  `spinup version` and `spinup list` out of the linux/amd64 build and uploads
+  the result as a workflow artefact, without touching the Releases page.
+- `make release-check` (`goreleaser check`) and a CI job that runs it on every
+  push, so the config cannot rot between tags.
+- The first spinup release will be `v1.1.0`, not `v0.1.0`: this repository was
+  already tagged `v1.0.0` in its My-Scripts days, and a v0 tag would sort below
+  it (PLAN §7.6). Binaries print a `v`-prefixed version so what
+  `spinup version` shows is exactly the tag it came from.
+
 [unreleased]: https://github.com/DulsaraNethmin/My-Scripts/commits/main

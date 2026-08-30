@@ -1,6 +1,7 @@
 package compose_test
 
 import (
+	"bytes"
 	"errors"
 	"os"
 	"path/filepath"
@@ -102,6 +103,38 @@ func TestLogsArgs(t *testing.T) {
 		if !strings.Contains(got, want) {
 			t.Errorf("Logs args %q are missing %q", got, want)
 		}
+	}
+}
+
+// os/exec copies a command's stdout and stderr on two goroutines. Handing the
+// runner one writer for both — what any caller collecting the whole output into
+// a single buffer does, the CLI's own integration test included — must not put
+// two goroutines into that writer at once. Under -race this is the test that
+// fails if stream() stops serializing them.
+func TestStreamSharesOneWriterSafely(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("the fake docker is a shell script")
+	}
+
+	dir := t.TempDir()
+	bin := filepath.Join(dir, "fake-docker")
+	script := "#!/bin/sh\ni=0\nwhile [ $i -lt 300 ]; do echo stdout; echo stderr >&2; i=$((i+1)); done\n"
+	if err := os.WriteFile(bin, []byte(script), 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	var out bytes.Buffer
+	r := compose.New(&out, &out)
+	r.Bin = bin
+
+	p := project()
+	p.Dir = dir
+
+	if err := r.Up(t.Context(), p, compose.UpOptions{}); err != nil {
+		t.Fatalf("Up: %v", err)
+	}
+	if want := 600; bytes.Count(out.Bytes(), []byte("\n")) != want {
+		t.Errorf("collected %d lines, want %d", bytes.Count(out.Bytes(), []byte("\n")), want)
 	}
 }
 

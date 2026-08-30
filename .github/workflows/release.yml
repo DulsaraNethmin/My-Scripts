@@ -1,0 +1,104 @@
+name: release
+
+# Tag pushes publish; the manual run is a dry run that builds every target and
+# uploads the archives as workflow artefacts without touching the Releases page.
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    name: goreleaser
+    runs-on: ubuntu-latest
+    permissions:
+      # Create the GitHub release and upload its assets.
+      contents: write
+      # Mint the OIDC token cosign signs the checksum file with (keyless).
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # GoReleaser builds the changelog from git history and refuses to run
+          # on a shallow clone.
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      # Everything CI proves on a push is proven again here: a tag can point at
+      # a commit that never passed CI.
+      - name: test
+        run: go test ./... -race -count=1
+
+      - uses: sigstore/cosign-installer@v3
+
+      - uses: goreleaser/goreleaser-action@v6
+        with:
+          distribution: goreleaser
+          version: "~> v2"
+          args: >-
+            release --clean
+            ${{ startsWith(github.ref, 'refs/tags/v') && '' || '--snapshot' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Signing is not skipped in snapshot mode, so the manual dry run exercises
+      # the cosign path too — with the same workflow identity a tag would use.
+      - name: the checksums and their signature verify
+        run: |
+          cd dist
+          sha256sum -c checksums.txt --ignore-missing
+          cosign verify-blob \
+            --certificate checksums.txt.pem \
+            --signature checksums.txt.sig \
+            --certificate-identity-regexp "^https://github\.com/${GITHUB_REPOSITORY}/\.github/workflows/release\.yml@" \
+            --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+            checksums.txt
+
+      # The archives must be a single binary plus LICENSE/README/CHANGELOG. The
+      # catalog is compiled in, so a stacks/ directory in an archive means the
+      # config regressed and users would get a second, staler copy of it.
+      - name: archives ship the binary, not the catalog
+        run: |
+          fail=0
+          for a in dist/*.tar.gz; do
+            [ -e "$a" ] || continue
+            echo "-- $a"
+            tar -tzf "$a"
+            if tar -tzf "$a" | grep -q '^stacks/'; then
+              echo "ERROR: $a ships stacks/"; fail=1
+            fi
+          done
+          for a in dist/*.zip; do
+            [ -e "$a" ] || continue
+            echo "-- $a"
+            unzip -l "$a"
+            if unzip -Z1 "$a" | grep -q '^stacks/'; then
+              echo "ERROR: $a ships stacks/"; fail=1
+            fi
+          done
+          exit $fail
+
+      - name: the built binary carries the catalog and the version
+        run: |
+          tar -xzf dist/spinup_*_linux_amd64.tar.gz -C /tmp spinup
+          /tmp/spinup version
+          /tmp/spinup list
+
+      - name: upload dry-run archives
+        if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: spinup-snapshot
+          path: |
+            dist/*.tar.gz
+            dist/*.zip
+            dist/checksums.txt
+          retention-days: 7
