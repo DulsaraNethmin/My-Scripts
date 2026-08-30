@@ -23,7 +23,10 @@ go.work.sum
 !*.env.example
 
 # ---- database dumps / seed data ----
+# Stack seed data under stacks/<name>/init/ is tracked; ad-hoc dumps are not.
 *.sql
+!stacks/*/init/*.sql
+!stacks/*/init/*.sh
 *.sqlite
 *.sqlite3
 *.dump

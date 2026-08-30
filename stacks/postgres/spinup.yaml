@@ -1,0 +1,16 @@
+name: postgres
+description: PostgreSQL 16 with pgAdmin
+category: database
+primary: postgres
+cli: psql -U ${POSTGRES_USER} ${POSTGRES_DB}
+gui:
+  service: pgadmin
+  url: http://localhost:${PGADMIN_PORT}
+  login: ${PGADMIN_EMAIL} / ${PGADMIN_PASSWORD}
+url: postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:${POSTGRES_PORT}/${POSTGRES_DB}
+ports:
+  - name: POSTGRES_PORT
+    default: 5432
+  - name: PGADMIN_PORT
+    default: 8080
+profiles: [gui]
