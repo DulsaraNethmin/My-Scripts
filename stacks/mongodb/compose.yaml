@@ -1,0 +1,56 @@
+name: spinup-mongodb
+
+services:
+  mongodb:
+    image: mongo:7
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER:-spinup}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:-spinup}
+      MONGO_INITDB_DATABASE: ${MONGO_DB:-spinup}
+    ports:
+      - "${MONGO_PORT:-27017}:27017"
+    volumes:
+      - mongodb-data:/data/db
+      # Mongo keeps its auth/rollback metadata separate from the data files.
+      - mongodb-config:/data/configdb
+      # Any .js/.sh dropped in init/ runs once, on an empty data volume.
+      - ./init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --quiet --host 127.0.0.1 -u \"$$MONGO_INITDB_ROOT_USERNAME\" -p \"$$MONGO_INITDB_ROOT_PASSWORD\" --authenticationDatabase admin --eval 'db.adminCommand(\"ping\").ok' | grep -q 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+  mongo-express:
+    image: mongo-express:1
+    profiles: [gui]
+    restart: unless-stopped
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongodb
+      ME_CONFIG_MONGODB_PORT: 27017
+      ME_CONFIG_MONGODB_ADMINUSERNAME: ${MONGO_USER:-spinup}
+      ME_CONFIG_MONGODB_ADMINPASSWORD: ${MONGO_PASSWORD:-spinup}
+      ME_CONFIG_MONGODB_ENABLE_ADMIN: "true"
+      # mongo-express 1.x puts the whole UI behind HTTP basic auth.
+      ME_CONFIG_BASICAUTH_USERNAME: ${MONGO_EXPRESS_USER:-spinup}
+      ME_CONFIG_BASICAUTH_PASSWORD: ${MONGO_EXPRESS_PASSWORD:-spinup}
+    ports:
+      - "${MONGO_EXPRESS_PORT:-8082}:8081"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    healthcheck:
+      # 401 means the server is up; we only need liveness, not a login.
+      # 127.0.0.1, not localhost: the app binds IPv4 only and localhost
+      # resolves to ::1 first inside this image.
+      test: ["CMD-SHELL", "node -e \"require('http').get('http://127.0.0.1:8081/',r=>process.exit(r.statusCode<500?0:1)).on('error',()=>process.exit(1))\""]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
+
+volumes:
+  mongodb-data:
+  mongodb-config:
