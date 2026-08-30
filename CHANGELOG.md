@@ -34,9 +34,25 @@ local development services with one command. See `docs/PLAN.md` for the design a
   superseded by the CLI.
 - `redis/Dockerfile`, which nothing referenced.
 
-### Notes
+### Added — stack catalog (Phase 1)
 
-The Compose files are deliberately kept as-is; they are the input to the Phase 1
-stack catalog, where each is rewritten under `stacks/<name>/` with its bugs fixed.
+Eight stacks under `stacks/<name>/`, each with `compose.yaml`, `.env.example`,
+`spinup.yaml` and a `README.md`: `postgres`, `mysql`, `mongodb`, `redis`,
+`mssql`, `pytorch`, `nginx-static` and `nginx-proxy-manager`. Every bug listed
+in `docs/PLAN.md` §1 is fixed, and each stack was brought up and verified
+healthy rather than only being config-checked.
+
+Applied throughout: pinned image tags instead of `:latest`, healthchecks on
+primary services with GUIs waiting on `service_healthy`, named volumes so
+`down` never destroys data, env-driven ports and credentials with inline
+defaults, and GUIs on non-colliding `80xx` ports recorded in `docs/PORTS.md`.
+
+- `setup/` replaces `docker-setup.sh` with per-platform installers for
+  Ubuntu/Debian, Fedora/RHEL and macOS, installing Compose **v2** rather than
+  the end-of-life v1 binary and no longer running a full system upgrade.
+- `scripts/lint-stacks.sh` and `.github/workflows/ci.yml` — structural lint of
+  the catalog, a compose-config matrix that discovers stacks automatically, and
+  a smoke matrix that brings the light stacks up and asserts `down -v` really
+  removes volumes.
 
 [unreleased]: https://github.com/DulsaraNethmin/My-Scripts/commits/main
