@@ -129,6 +129,16 @@ location; user state lives in `~/.spinup/`.
   goes in `stacks/`. Don't patch a legacy script — port it and delete it.
 - `docs/PLAN.md` §1 lists every known bug in the legacy Compose files. When porting a
   stack, fix its listed bugs; that table is the acceptance checklist.
+- In healthchecks always probe `127.0.0.1`, never `localhost`. In several images
+  `localhost` resolves to `::1` first while the service binds IPv4 only, so the
+  probe fails against a perfectly healthy container.
+- Check a probe's tooling exists before relying on it. BusyBox `wget` (Alpine
+  images) has no `--user`/`--password`, and not every image ships `curl`. Test
+  the command with `docker exec` before committing the healthcheck.
+- A healthcheck only needs to prove liveness. For a GUI behind auth, treat 401
+  as healthy rather than embedding credentials in the probe.
+- Pin to a tag that exists — `docker manifest inspect <image>:<tag>` before
+  writing it into a compose file. PLAN's suggested tags are not all real.
 - macOS ships GNU Make 3.81, so the Makefile uses tabs and avoids `.RECIPEPREFIX`.
 - `docs/PLAN.md` §7 has open decisions. Settled so far: name is **spinup**; the CLI
   grows **in place** in this repo; junk files are deleted in a normal commit rather
