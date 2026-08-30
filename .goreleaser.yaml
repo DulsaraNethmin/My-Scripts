@@ -97,6 +97,76 @@ signs:
       - "--yes"
     output: true
 
+# ---------------------------------------------------------------- packages
+# Both of these push a manifest to a repository of the user's that is not this
+# one, which the workflow's GITHUB_TOKEN cannot write to — they use a PAT from
+# the TAP_GITHUB_TOKEN secret instead. See docs/RELEASING.md for creating the
+# two repositories and the token; until they exist, a tag would fail here after
+# the release itself is already published.
+
+# macOS. A cask rather than a formula because GoReleaser deprecated `brews` in
+# favour of `homebrew_casks` (and `goreleaser check` fails on it), and because
+# Homebrew now wants pre-built binaries shipped as casks. Casks are macOS-only,
+# so Linux gets the archives and install.sh instead of the tap.
+homebrew_casks:
+  - name: spinup
+    ids:
+      - spinup
+    binaries:
+      - spinup
+    repository:
+      owner: DulsaraNethmin
+      name: homebrew-tap
+      branch: main
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
+    homepage: https://github.com/DulsaraNethmin/spinup
+    description: Start local development services — databases, queues, GUIs, dev tooling — with one command
+    license: MIT
+    commit_author:
+      name: DulsaraNethmin
+      email: dulsaranethmin@gmail.com
+    commit_msg_template: "spinup {{ .Tag }}"
+    # The binaries are not notarized, so without this macOS quarantines the
+    # download and Gatekeeper refuses to run it — the user sees "cannot be
+    # opened because the developer cannot be verified" on their first spinup.
+    hooks:
+      post:
+        install: |
+          if system_command("/usr/bin/xattr", args: ["-h"]).exit_status == 0
+            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/spinup"]
+          end
+    # `brew uninstall` leaves ~/.spinup alone — it holds the user's stacks and
+    # env files. `brew uninstall --zap` is the one that says to delete it.
+    zap:
+      trash:
+        - ~/.spinup
+    caveats: |
+      spinup drives Docker, so Docker with Compose v2 has to be running:
+
+        spinup doctor     check the setup
+        spinup list       the stack catalog
+        spinup up postgres
+
+# Windows.
+scoops:
+  - name: spinup
+    ids:
+      - spinup
+    repository:
+      owner: DulsaraNethmin
+      name: scoop-bucket
+      branch: main
+      token: "{{ .Env.SCOOP_BUCKET_GITHUB_TOKEN }}"
+    homepage: https://github.com/DulsaraNethmin/spinup
+    description: Start local development services — databases, queues, GUIs, dev tooling — with one command
+    license: MIT
+    commit_author:
+      name: DulsaraNethmin
+      email: dulsaranethmin@gmail.com
+    commit_msg_template: "spinup {{ .Tag }}"
+    post_install:
+      - "Write-Host 'spinup needs Docker Desktop with Compose v2 running. Check it with: spinup doctor'"
+
 snapshot:
   version_template: "{{ incpatch .Version }}-snapshot-{{ .ShortCommit }}"
 
