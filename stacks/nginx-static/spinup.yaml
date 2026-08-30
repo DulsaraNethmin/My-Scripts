@@ -1,0 +1,14 @@
+name: nginx-static
+description: nginx serving a static site or SPA build
+category: web
+primary: nginx
+cli: /bin/sh
+gui:
+  service: nginx
+  url: http://localhost:${NGINX_PORT}
+  login: none
+url: http://localhost:${NGINX_PORT}
+ports:
+  - name: NGINX_PORT
+    default: 8090
+profiles: []

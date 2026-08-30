@@ -1,0 +1,18 @@
+name: nginx-proxy-manager
+description: Nginx Proxy Manager — reverse proxy with a web UI and Let's Encrypt
+category: web
+primary: npm
+cli: /bin/sh
+gui:
+  service: npm
+  url: http://localhost:${NPM_ADMIN_PORT}
+  login: none by default; you create the admin account on first load
+url: http://localhost:${NPM_ADMIN_PORT}
+ports:
+  - name: NPM_HTTP_PORT
+    default: 80
+  - name: NPM_HTTPS_PORT
+    default: 443
+  - name: NPM_ADMIN_PORT
+    default: 81
+profiles: []
