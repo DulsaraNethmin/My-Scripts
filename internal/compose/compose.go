@@ -17,6 +17,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync"
 )
 
 // ProjectPrefix namespaces every compose project spinup creates, so `docker
@@ -134,17 +135,25 @@ func (r *Runner) Output(ctx context.Context, p Project, args ...string) ([]byte,
 // stream runs docker with its output going to the user as it arrives.
 func (r *Runner) stream(ctx context.Context, dir string, args []string) error {
 	cmd := r.command(ctx, dir, args)
-	cmd.Stdout = r.Stdout
 	cmd.Stdin = r.Stdin
+
+	// os/exec copies stdout and stderr on two goroutines, so the two writers
+	// share one lock. A caller that passes the same writer for both — anything
+	// collecting a command's whole output into one buffer — would otherwise
+	// have both goroutines writing to it at once.
+	var mu sync.Mutex
+	if r.Stdout != nil {
+		cmd.Stdout = &lockedWriter{mu: &mu, w: r.Stdout}
+	}
 
 	// compose writes its progress to stderr, so it has to be streamed as well
 	// as captured: the user sees it live, and a failure can quote it.
 	var captured bytes.Buffer
+	stderr := io.Writer(&captured)
 	if r.Stderr != nil {
-		cmd.Stderr = io.MultiWriter(r.Stderr, &captured)
-	} else {
-		cmd.Stderr = &captured
+		stderr = io.MultiWriter(r.Stderr, &captured)
 	}
+	cmd.Stderr = &lockedWriter{mu: &mu, w: stderr}
 
 	if err := cmd.Run(); err != nil {
 		return composeError(args, captured.String(), err)
@@ -181,4 +190,18 @@ func composeError(args []string, stderr string, err error) error {
 		e.ExitCode = exitErr.ExitCode()
 	}
 	return e
+}
+
+// lockedWriter serializes the writes of the goroutines os/exec runs for a
+// command's stdout and stderr. The zero value is not usable: the mutex is
+// shared between the two writers of one command, not owned by either.
+type lockedWriter struct {
+	mu *sync.Mutex
+	w  io.Writer
+}
+
+func (l *lockedWriter) Write(p []byte) (int, error) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	return l.w.Write(p)
 }
