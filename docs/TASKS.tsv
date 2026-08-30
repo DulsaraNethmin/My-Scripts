@@ -6,7 +6,7 @@
 0.2|Phase 0 — Repo hygiene|done|main|Bootstrap dev tooling: CLAUDE.md, Makefile, progress tracker
 0.3|Phase 0 — Repo hygiene|manual|-|Rename GitHub repo My-Scripts to spinup, set description + topics
 1.1|Phase 1 — Catalog v1|done|task/1.1-stack-postgres|stacks/postgres: compose.yaml, spinup.yaml, .env.example, README
-1.2|Phase 1 — Catalog v1|wip|task/1.2-stack-mysql|stacks/mysql: fix phpMyAdmin creds, mysql:8.4, drop auth plugin flag
+1.2|Phase 1 — Catalog v1|done|task/1.2-stack-mysql|stacks/mysql: fix phpMyAdmin creds, mysql:8.4, drop auth plugin flag
 1.3|Phase 1 — Catalog v1|todo|task/1.3-stack-mongodb|stacks/mongodb: mongo:7 + mongo-express GUI
 1.4|Phase 1 — Catalog v1|todo|task/1.4-stack-redis|stacks/redis: data volume, redisinsight:2
 1.5|Phase 1 — Catalog v1|todo|task/1.5-stack-mssql|stacks/mssql: 2022 image, MSSQL_SA_PASSWORD, healthcheck
