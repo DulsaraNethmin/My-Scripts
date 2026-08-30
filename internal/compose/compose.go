@@ -120,13 +120,20 @@ func (r *Runner) bin() string {
 	return r.Bin
 }
 
-// Run runs a compose subcommand, streaming its output.
+// Run runs a compose subcommand for a project, streaming its output.
 func (r *Runner) Run(ctx context.Context, p Project, args ...string) error {
-	full := p.Args(args...)
+	return r.stream(ctx, p.Dir, p.Args(args...))
+}
 
-	cmd := exec.CommandContext(ctx, r.bin(), full...)
-	cmd.Dir = p.Dir
-	cmd.Env = append(os.Environ(), r.Env...)
+// Output runs a compose subcommand for a project and returns its stdout, for
+// the commands that parse rather than display it.
+func (r *Runner) Output(ctx context.Context, p Project, args ...string) ([]byte, error) {
+	return r.capture(ctx, p.Dir, p.Args(args...))
+}
+
+// stream runs docker with its output going to the user as it arrives.
+func (r *Runner) stream(ctx context.Context, dir string, args []string) error {
+	cmd := r.command(ctx, dir, args)
 	cmd.Stdout = r.Stdout
 	cmd.Stdin = r.Stdin
 
@@ -140,28 +147,30 @@ func (r *Runner) Run(ctx context.Context, p Project, args ...string) error {
 	}
 
 	if err := cmd.Run(); err != nil {
-		return composeError(full, captured.String(), err)
+		return composeError(args, captured.String(), err)
 	}
 	return nil
 }
 
-// Output runs a compose subcommand and returns its stdout, for the commands
-// that parse rather than display it.
-func (r *Runner) Output(ctx context.Context, p Project, args ...string) ([]byte, error) {
-	full := p.Args(args...)
-
-	cmd := exec.CommandContext(ctx, r.bin(), full...)
-	cmd.Dir = p.Dir
-	cmd.Env = append(os.Environ(), r.Env...)
+// capture runs docker and returns its stdout.
+func (r *Runner) capture(ctx context.Context, dir string, args []string) ([]byte, error) {
+	cmd := r.command(ctx, dir, args)
 
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 
 	if err := cmd.Run(); err != nil {
-		return stdout.Bytes(), composeError(full, stderr.String(), err)
+		return stdout.Bytes(), composeError(args, stderr.String(), err)
 	}
 	return stdout.Bytes(), nil
+}
+
+func (r *Runner) command(ctx context.Context, dir string, args []string) *exec.Cmd {
+	cmd := exec.CommandContext(ctx, r.bin(), args...)
+	cmd.Dir = dir
+	cmd.Env = append(os.Environ(), r.Env...)
+	return cmd
 }
 
 func composeError(args []string, stderr string, err error) error {

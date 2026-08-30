@@ -51,6 +51,10 @@ func Success(s string) string { return render(successStyle, s) }
 // Warn renders s as a warning.
 func Warn(s string) string { return render(warnStyle, s) }
 
+// Width is the number of terminal columns a string occupies, ignoring any
+// escape sequences in it.
+func Width(s string) int { return lipgloss.Width(s) }
+
 func render(style lipgloss.Style, s string) string {
 	if !colour.Load() {
 		return s
