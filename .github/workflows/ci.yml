@@ -19,12 +19,30 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: shellcheck
-        run: shellcheck scripts/*.sh setup/*.sh
+        run: shellcheck install.sh scripts/*.sh setup/*.sh
       - name: scripts are executable
         run: |
-          for f in scripts/*.sh setup/*.sh; do
+          for f in install.sh scripts/*.sh setup/*.sh; do
             [ -x "$f" ] || { echo "$f is not executable"; exit 1; }
           done
+
+      # install.ps1 is the one thing here that cannot be run on Linux, so it is
+      # at least parsed and linted. pwsh is preinstalled on GitHub's runners.
+      - name: install.ps1 parses and lints
+        shell: pwsh
+        run: |
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseFile(
+            "$PWD/install.ps1", [ref]$null, [ref]$errors) | Out-Null
+          if ($errors) { $errors | ForEach-Object { Write-Error $_.Message }; exit 1 }
+
+          # The analyzer's warnings are printed but not fatal — an installer
+          # writes to the console on purpose, which is a warning all by itself.
+          Install-Module PSScriptAnalyzer -Force -Scope CurrentUser
+          $found = Invoke-ScriptAnalyzer -Path ./install.ps1
+          if ($found) { $found | Format-Table -AutoSize | Out-String | Write-Host }
+          if ($found | Where-Object { $_.Severity -eq 'Error' }) { exit 1 }
+          Write-Host "install.ps1 parses"
 
   # --------------------------------------------------------------- stacks
 
