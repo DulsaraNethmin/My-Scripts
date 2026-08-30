@@ -70,6 +70,12 @@ defaults, and GUIs on non-colliding `80xx` ports recorded in `docs/PORTS.md`.
   mistyped key is an error rather than being silently ignored, and every rule
   a stack must satisfy is reported in one pass. `internal/catalog` and
   `scripts/lint-stacks.sh` now enforce the same rules.
+- `spinup doctor`: the docker CLI, a running daemon and Compose v2, plus
+  spinup's own home directory, config and catalog. Compose v1 is reported as a
+  failure rather than being accepted — the old scripts in this repo ran on it,
+  and it does not support the profiles and healthcheck conditions the stacks
+  now use. Exit code 2 means Docker is the problem, 1 means spinup's own
+  configuration is.
 - `~/.spinup/config.yaml` with `gui` (GUIs come up with their stack by default),
   read strictly so a mistyped key is reported rather than silently doing nothing.
 - Per-stack environment resolution: `spinup.yaml` port defaults, then the stack's
