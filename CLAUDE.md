@@ -111,7 +111,11 @@ never `:latest`, every port/credential env-driven with inline defaults, named vo
 healthcheck on the primary service, `depends_on: service_healthy` for GUIs, GUIs on
 non-colliding 8xxx ports, `gui`/`gpu` profiles).
 
+Host ports are allocated centrally in `docs/PORTS.md` — claim a stack's ports
+there before writing its `compose.yaml`, so stacks can all run side by side.
+
 A stack is not done until `docker compose config` passes and it comes up healthy.
+`stacks/postgres/` is the reference implementation; copy its shape.
 
 **Runtime data.** Named Docker volumes prefixed `spinup-<stack>_`. Compose projects
 are named `spinup-<stack>`. Nothing is ever written into the repo or the install
