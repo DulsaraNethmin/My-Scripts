@@ -1,0 +1,24 @@
+name: spinup-nginx-static
+
+services:
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "${NGINX_PORT:-8090}:80"
+    volumes:
+      # Defaults to a named volume seeded from the image. Point NGINX_SITE at a
+      # path (anything starting with / or .) to serve a folder from your machine
+      # instead — Compose treats it as a bind mount automatically.
+      - ${NGINX_SITE:-nginx-site}:/usr/share/nginx/html
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:80/ || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 5s
+
+volumes:
+  nginx-site:

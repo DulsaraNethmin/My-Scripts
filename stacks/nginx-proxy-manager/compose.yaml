@@ -1,0 +1,28 @@
+name: spinup-nginx-proxy-manager
+
+services:
+  npm:
+    image: jc21/nginx-proxy-manager:2
+    restart: unless-stopped
+    ports:
+      # This stack is the edge proxy, so unlike every other stack it really
+      # does want the standard web ports. It cannot run alongside anything
+      # else that binds 80 or 443.
+      - "${NPM_HTTP_PORT:-80}:80"
+      - "${NPM_HTTPS_PORT:-443}:443"
+      - "${NPM_ADMIN_PORT:-81}:81"
+    volumes:
+      # Named volumes, not ./data and ./letsencrypt — certificates and the
+      # proxy database must not land in the repo or the install directory.
+      - npm-data:/data
+      - npm-letsencrypt:/etc/letsencrypt
+    healthcheck:
+      test: ["CMD-SHELL", "/usr/bin/check-health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+
+volumes:
+  npm-data:
+  npm-letsencrypt:

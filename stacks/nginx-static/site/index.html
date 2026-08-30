@@ -1,0 +1,15 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>nginx-static</title>
+<style>
+  :root { color-scheme: light dark; }
+  body { font: 16px/1.6 system-ui, sans-serif; max-width: 34rem; margin: 12vh auto; padding: 0 1.5rem; }
+  code { background: rgba(128,128,128,.18); padding: .15em .4em; border-radius: 4px; }
+</style>
+<h1>nginx-static is running</h1>
+<p>This is the placeholder page baked into the image. Replace it with your own site:</p>
+<pre><code>spinup env nginx-static --edit
+# set NGINX_SITE to a folder on your machine, e.g.
+# NGINX_SITE=/Users/you/project/dist
+spinup restart nginx-static</code></pre>
+<p>Unknown paths fall back to <code>index.html</code>, so client-side routers work.</p>
