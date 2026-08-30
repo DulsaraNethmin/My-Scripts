@@ -22,7 +22,8 @@ func newURLCmd() *cobra.Command {
 			"--gui prints the address of the stack's web interface instead. Neither\n" +
 			"needs Docker: the answer comes from the stack's environment, so it is the\n" +
 			"same before and after the stack is running.",
-		Args: cobra.ExactArgs(1),
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeOneStack,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			// No profile flags: which profiles are active changes what runs,
 			// not what a client would connect to, and `url --gui` means "the
@@ -80,7 +81,8 @@ func newOpenCmd() *cobra.Command {
 			"whatever it ships — in your browser, with the login printed beside it.\n\n" +
 			"The stack has to be running, and its GUI is behind the `gui` profile:\n" +
 			"`spinup up <stack> --gui` if you started it without one.",
-		Args: cobra.ExactArgs(1),
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeOneStack,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			out := cmd.OutOrStdout()
 

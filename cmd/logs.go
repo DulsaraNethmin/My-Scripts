@@ -19,7 +19,8 @@ func newLogsCmd() *cobra.Command {
 		Short: "Show a stack's logs",
 		Long: "logs prints the logs of every service in a stack, or of the services you\n" +
 			"name. With -f it follows them until you interrupt it.",
-		Args: cobra.MinimumNArgs(1),
+		Args:              cobra.MinimumNArgs(1),
+		ValidArgsFunction: completeOneStack,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 

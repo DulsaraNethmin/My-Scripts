@@ -17,7 +17,8 @@ func newPSCmd() *cobra.Command {
 		Short: "Show the containers of running stacks",
 		Long: "ps lists the containers of a stack, or of every spinup stack that is\n" +
 			"running, with their health and published ports.",
-		Args: cobra.MaximumNArgs(1),
+		Args:              cobra.MaximumNArgs(1),
+		ValidArgsFunction: completeOneStack,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 			out := cmd.OutOrStdout()

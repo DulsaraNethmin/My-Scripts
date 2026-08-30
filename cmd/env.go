@@ -26,7 +26,8 @@ func newEnvCmd() *cobra.Command {
 			"and database names, resolved exactly as `up` resolves them.\n\n" +
 			"--edit opens the stack's env file in $EDITOR. Changes take effect on the\n" +
 			"next `spinup up`.",
-		Args: cobra.ExactArgs(1),
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeOneStack,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 			out := cmd.OutOrStdout()

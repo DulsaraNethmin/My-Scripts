@@ -29,7 +29,8 @@ func newUpCmd() *cobra.Command {
 			"The stack's files are written to ~/.spinup/stacks/<name>/ and its ports and\n" +
 			"credentials to ~/.spinup/env/<name>.env, where you can edit them. Neither is\n" +
 			"ever overwritten once it exists.",
-		Args: cobra.MinimumNArgs(1),
+		Args:              cobra.MinimumNArgs(1),
+		ValidArgsFunction: completeStacks,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 			out := cmd.OutOrStdout()

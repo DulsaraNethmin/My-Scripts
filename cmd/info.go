@@ -24,7 +24,8 @@ func newInfoCmd() *cobra.Command {
 			"use, how to connect, and then its README — what the image is good for and\n" +
 			"whatever is worth knowing before you start it.\n\n" +
 			"Like `env` and `url`, it works with Docker stopped.",
-		Args: cobra.ExactArgs(1),
+		Args:              cobra.ExactArgs(1),
+		ValidArgsFunction: completeOneStack,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 			out := cmd.OutOrStdout()

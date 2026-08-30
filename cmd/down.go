@@ -22,7 +22,8 @@ func newDownCmd() *cobra.Command {
 		Long: "down stops a stack's containers and leaves its data volumes alone, so\n" +
 			"`spinup up` brings it back with everything still in it.\n\n" +
 			"To delete the data, use `spinup destroy`.",
-		Args: cobra.MinimumNArgs(1),
+		Args:              cobra.MinimumNArgs(1),
+		ValidArgsFunction: completeStacks,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 			out := cmd.OutOrStdout()
