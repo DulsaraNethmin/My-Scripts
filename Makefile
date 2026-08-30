@@ -17,7 +17,7 @@ HAS_GO_CODE := $(wildcard main.go)
 .DEFAULT_GOAL := help
 .PHONY: help status tasks next start done todo handoff build install run clean \
         test test-unit test-integration lint vet fmt tidy stacks-validate \
-        stacks-lint stacks-list doctor snapshot merge check
+        stacks-lint stacks-list doctor snapshot release-check merge check
 
 ## ---------------------------------------------------------------- help
 
@@ -169,9 +169,18 @@ doctor: ## Check the local dev toolchain
 
 check: vet lint test stacks-lint stacks-validate ## Everything CI runs
 
-snapshot: ## Local GoReleaser snapshot build
+release-check: ## Validate .goreleaser.yaml (skips if goreleaser is not installed)
 	@command -v goreleaser >/dev/null 2>&1 \
-	  && goreleaser release --snapshot --clean \
+	  && goreleaser check \
+	  || echo "goreleaser not installed — brew install goreleaser"
+
+# --skip=sign because signing is *not* skipped by snapshot mode: without it this
+# target fails on any machine without cosign, and a keyless signature needs a
+# GitHub OIDC token that only the release workflow has. Signing is verified in
+# CI by running the release workflow manually.
+snapshot: ## Local GoReleaser snapshot build — all six targets into dist/, no publish
+	@command -v goreleaser >/dev/null 2>&1 \
+	  && goreleaser release --snapshot --clean --skip=sign \
 	  || echo "goreleaser not installed — brew install goreleaser"
 
 clean: ## Remove build artefacts

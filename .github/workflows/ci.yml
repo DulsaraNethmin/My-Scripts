@@ -167,6 +167,25 @@ jobs:
         with:
           version: v2.12.2
 
+  # ------------------------------------------------------------- release
+  # The release config is only exercised on a tag, which is exactly when a
+  # mistake in it is most expensive. `goreleaser check` parses it on every push.
+
+  release-config:
+    name: goreleaser check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      - uses: goreleaser/goreleaser-action@v6
+        with:
+          distribution: goreleaser
+          version: "~> v2"
+          args: check
+
   # ---------------------------------------------------------- integration
   # The tests that need a docker daemon: they bring redis up through the
   # compose wrapper and through the CLI itself, and check that `down` keeps
@@ -182,5 +201,8 @@ jobs:
         with:
           go-version-file: go.mod
           cache: true
+      # -race, like `make test-integration`: the CLI test drives compose through
+      # a single buffer, which is exactly the shape that hid a write race in
+      # internal/compose until the race detector was pointed at it.
       - name: go test -tags integration
-        run: go test ./... -tags integration -count=1 -timeout 15m
+        run: go test ./... -race -tags integration -count=1 -timeout 15m

@@ -1,0 +1,162 @@
+# GoReleaser — https://goreleaser.com
+#
+# Local dry run:  make snapshot      (builds all six targets into dist/, no publish)
+# Config check:   make release-check
+# Real release:   push a tag; .github/workflows/release.yml does the rest.
+#
+# A spinup release is a single file. The stack catalog is compiled into the
+# binary by //go:embed in main.go, so the archives must NOT ship stacks/ —
+# see the `archives.files` note below.
+
+version: 2
+project_name: spinup
+
+before:
+  hooks:
+    - go mod tidy
+    - go mod verify
+
+builds:
+  - id: spinup
+    main: .
+    binary: spinup
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    # The same ldflags the Makefile uses, so `spinup version` reads the same
+    # whether the binary was built locally or by a release. The v is added back
+    # because GoReleaser strips it from the tag, while the Makefile's
+    # `git describe` keeps it — and `spinup update` in Phase 3.3 compares what
+    # the binary prints against the tag names on the releases page.
+    ldflags:
+      - -s -w
+      - -X main.version=v{{ .Version }}
+      - -X main.commit={{ .FullCommit }}
+      - -X main.date={{ .Date }}
+    # Reproducible builds: stamp binaries with the commit time, not build time.
+    mod_timestamp: "{{ .CommitTimestamp }}"
+    goos:
+      - darwin
+      - linux
+      - windows
+    goarch:
+      - amd64
+      - arm64
+
+archives:
+  - id: spinup
+    ids:
+      - spinup
+    # spinup_1.1.0_darwin_arm64.tar.gz — no leading v, lowercase os/arch, so
+    # install.sh can build the name from `uname -s | tr A-Z a-z` and `uname -m`.
+    name_template: "{{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
+    formats:
+      - tar.gz
+    format_overrides:
+      - goos: windows
+        formats:
+          - zip
+    # Explicit, because the default file list would be fine today but the point
+    # is that this list is the whole archive: one binary plus paperwork. The
+    # catalog lives inside the binary; shipping stacks/ beside it would give
+    # users a second, staler copy of what `spinup up` already has.
+    files:
+      - LICENSE
+      - README.md
+      - CHANGELOG.md
+
+checksum:
+  name_template: "checksums.txt"
+  algorithm: sha256
+
+# Keyless signing over the checksum file: sign that one artifact and every
+# archive is covered by it. Uses the release workflow's GitHub OIDC token
+# (permissions: id-token: write), so there is no private key to keep.
+#
+# This pipe is NOT skipped by snapshot mode — `make snapshot` passes
+# --skip=sign so a local build does not need cosign or an OIDC token.
+#
+#   cosign verify-blob \
+#     --certificate checksums.txt.pem \
+#     --signature checksums.txt.sig \
+#     --certificate-identity-regexp 'https://github\.com/DulsaraNethmin/.*' \
+#     --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+#     checksums.txt
+signs:
+  - id: cosign-checksums
+    cmd: cosign
+    artifacts: checksum
+    signature: "${artifact}.sig"
+    certificate: "${artifact}.pem"
+    args:
+      - sign-blob
+      - "--output-signature=${signature}"
+      - "--output-certificate=${certificate}"
+      - "${artifact}"
+      - "--yes"
+    output: true
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-snapshot-{{ .ShortCommit }}"
+
+changelog:
+  use: github
+  sort: asc
+  groups:
+    - title: Features
+      regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
+      order: 0
+    - title: Fixes
+      regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
+      order: 1
+    - title: Stacks
+      regexp: '^.*?stack(\([[:word:]]+\))??!?:.+$'
+      order: 2
+    - title: Other
+      order: 99
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^chore:"
+      - "^ci:"
+      - "^style:"
+      - "^refactor:"
+      - "^merge:"
+      - "^Merge "
+
+release:
+  # Owner and repo are taken from the git remote on purpose: the GitHub repo is
+  # still DulsaraNethmin/My-Scripts until the rename in task 0.3, and hardcoding
+  # a name here would fail the release the day either one changed.
+  draft: false
+  prerelease: auto
+  name_template: "v{{ .Version }}"
+  footer: |
+    ## Install
+
+    ```sh
+    # macOS / Linux — Homebrew
+    brew install DulsaraNethmin/tap/spinup
+
+    # Windows — Scoop
+    scoop bucket add DulsaraNethmin https://github.com/DulsaraNethmin/scoop-bucket
+    scoop install spinup
+    ```
+
+    Or download the archive for your platform below, unpack it and put `spinup`
+    on your `PATH`. The stack catalog is inside the binary — nothing else to
+    install.
+
+    **Verifying a download**
+
+    ```sh
+    sha256sum -c checksums.txt --ignore-missing
+    cosign verify-blob \
+      --certificate checksums.txt.pem \
+      --signature checksums.txt.sig \
+      --certificate-identity-regexp 'https://github\.com/DulsaraNethmin/.*' \
+      --certificate-oidc-issuer https://token.actions.githubusercontent.com \
+      checksums.txt
+    ```

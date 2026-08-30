@@ -22,10 +22,10 @@
 2.6|Phase 2 — CLI core|done|task/2.6-lifecycle-cmds|Commands: up, down, restart, destroy
 2.7|Phase 2 — CLI core|done|task/2.7-inspect-cmds|Commands: list, ps, logs, env, version
 2.8|Phase 2 — CLI core|done|task/2.8-tests|Unit tests + redis integration test in CI
-3.1|Phase 3 — Distribution|todo|task/3.1-goreleaser|GoReleaser: 3 OS x 2 arch, checksums, cosign
+3.1|Phase 3 — Distribution|wip|task/3.1-goreleaser|GoReleaser: 3 OS x 2 arch, checksums, cosign
 3.2|Phase 3 — Distribution|todo|task/3.2-taps|Homebrew tap + Scoop bucket repos, auto-updated on release
 3.3|Phase 3 — Distribution|todo|task/3.3-installers|install.sh, install.ps1, spinup update, completions
-3.4|Phase 3 — Distribution|manual|-|Tag and publish v0.1.0
+3.4|Phase 3 — Distribution|manual|-|Tag and publish v1.1.0
 4.1|Phase 4 — CLI polish|todo|task/4.1-connect-cmds|Commands: shell, cli, open, url, info
 4.2|Phase 4 — CLI polish|todo|task/4.2-authoring-cmds|Commands: new, reset, completion
 4.3|Phase 4 — CLI polish|todo|task/4.3-output|--json, --port override, post-up summary card
