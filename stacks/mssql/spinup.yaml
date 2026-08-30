@@ -1,0 +1,10 @@
+name: mssql
+description: Microsoft SQL Server 2022 (Developer edition)
+category: database
+primary: mssql
+cli: /opt/mssql-tools18/bin/sqlcmd -S 127.0.0.1 -U sa -P ${MSSQL_SA_PASSWORD} -C
+url: sqlserver://sa:${MSSQL_SA_PASSWORD}@localhost:${MSSQL_PORT}
+ports:
+  - name: MSSQL_PORT
+    default: 1433
+profiles: []
