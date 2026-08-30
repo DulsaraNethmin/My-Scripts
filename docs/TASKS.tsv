@@ -21,7 +21,7 @@
 2.5|Phase 2 — CLI core|done|task/2.5-compose-wrap|internal/compose: docker compose exec wrapper
 2.6|Phase 2 — CLI core|done|task/2.6-lifecycle-cmds|Commands: up, down, restart, destroy
 2.7|Phase 2 — CLI core|done|task/2.7-inspect-cmds|Commands: list, ps, logs, env, version
-2.8|Phase 2 — CLI core|todo|task/2.8-tests|Unit tests + redis integration test in CI
+2.8|Phase 2 — CLI core|wip|task/2.8-tests|Unit tests + redis integration test in CI
 3.1|Phase 3 — Distribution|todo|task/3.1-goreleaser|GoReleaser: 3 OS x 2 arch, checksums, cosign
 3.2|Phase 3 — Distribution|todo|task/3.2-taps|Homebrew tap + Scoop bucket repos, auto-updated on release
 3.3|Phase 3 — Distribution|todo|task/3.3-installers|install.sh, install.ps1, spinup update, completions

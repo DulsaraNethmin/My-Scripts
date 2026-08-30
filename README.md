@@ -9,17 +9,38 @@ spinup up postgres        # Postgres 16 + pgAdmin, running in ~10s
 
 No cloning, no editing YAML, no remembering ports and passwords.
 
-> **Status: in development.** The stack catalog is complete and working; the
-> `spinup` CLI that wraps it is Phase 2 and does not exist yet. Until it does,
-> use the stacks directly with `docker compose` — see below. This repository is
+> **Status: in development.** The stack catalog is complete, and the CLI now
+> runs the whole lifecycle. There is no release to install yet — that is the
+> next phase — so build it yourself, or use the stacks directly with
+> `docker compose`. Both work, and both will keep working. This repository is
 > the successor to `My-Scripts` and is still named that on GitHub.
 >
 > Progress: `make status`. Design: [`docs/PLAN.md`](docs/PLAN.md).
 
-## Using the stacks today
+## Building the CLI
 
-Every stack is a plain Compose project that works without the CLI. That is
-deliberate and will stay true.
+Go 1.25 and Docker with Compose v2:
+
+```
+make build                # -> bin/spinup
+./bin/spinup doctor       # check docker, compose and spinup's own setup
+./bin/spinup list         # the catalog, with ports and what is running
+./bin/spinup up postgres  # start it and wait for healthy
+```
+
+`up` writes the stack to `~/.spinup/stacks/<name>/` and its ports and
+credentials to `~/.spinup/env/<name>.env`, where you can edit them — neither is
+ever overwritten once it exists. Anything in `~/.spinup/stacks` shadows the copy
+built into the binary, so a stack you change stays changed.
+
+`down` stops a stack and keeps its data; `destroy` is the only command that
+deletes it, and it asks first.
+
+## Using the stacks without the CLI
+
+Every stack is a plain Compose project. That is deliberate and will stay true:
+spinup shells out to `docker compose`, so there is nothing it can do that you
+cannot do by hand.
 
 ```
 cd stacks/postgres
