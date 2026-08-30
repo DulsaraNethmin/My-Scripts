@@ -23,8 +23,8 @@ type Paths struct {
 	Root string
 }
 
-// Default returns the paths rooted at $SPINUP_HOME, or ~/.spinup.
-func Default() (Paths, error) {
+// DefaultPaths returns the paths rooted at $SPINUP_HOME, or ~/.spinup.
+func DefaultPaths() (Paths, error) {
 	if root := os.Getenv(HomeEnv); root != "" {
 		abs, err := filepath.Abs(root)
 		if err != nil {

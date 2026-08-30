@@ -92,7 +92,7 @@ func codeFor(err error) int {
 func userCatalog(embedded fs.FS) *catalog.Catalog {
 	cat := catalog.New(embedded)
 
-	paths, err := config.Default()
+	paths, err := config.DefaultPaths()
 	if err != nil {
 		return cat
 	}

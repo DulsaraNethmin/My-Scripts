@@ -109,6 +109,13 @@ reach outside its own package directory, so main owns the `embed.FS` and hands t
 subtree to `catalog.New`. Commands reach it through the command context
 (`catalog.FromContext`), which keeps them testable against a fixture catalog.
 
+A stack's environment resolves in four layers, lowest first: `spinup.yaml` port
+defaults → the stack's `.env.example` → `~/.spinup/env/<stack>.env` → the process
+environment, and that last one only for variables the stack already defines. The
+shell winning is not a choice — `docker compose` gives the shell precedence over
+`--env-file`, so anything else would print a port compose never bound. The
+integration test in `internal/config` asks compose itself and compares.
+
 `spinup.yaml` is parsed strictly (unknown keys are an error) by `internal/catalog`,
 which enforces the same rules as `scripts/lint-stacks.sh`. Change one and change the
 other, or a stack can pass CI and fail in the CLI.
