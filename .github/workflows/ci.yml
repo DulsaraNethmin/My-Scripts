@@ -1,0 +1,149 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ---------------------------------------------------------------- shell
+
+  shell:
+    name: shell scripts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: shellcheck
+        run: shellcheck scripts/*.sh
+      - name: scripts are executable
+        run: |
+          for f in scripts/*.sh; do
+            [ -x "$f" ] || { echo "$f is not executable"; exit 1; }
+          done
+
+  # --------------------------------------------------------------- stacks
+
+  lint-stacks:
+    name: stack lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: ./scripts/lint-stacks.sh
+
+  # Discover the catalog so adding a stack needs no workflow edit.
+  discover:
+    name: discover stacks
+    runs-on: ubuntu-latest
+    outputs:
+      stacks: ${{ steps.list.outputs.stacks }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: list
+        run: |
+          json=$(ls -d stacks/*/ | xargs -n1 basename | jq -R . | jq -sc .)
+          echo "stacks=$json" >> "$GITHUB_OUTPUT"
+          echo "found: $json"
+
+  config:
+    name: compose config
+    needs: discover
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        stack: ${{ fromJson(needs.discover.outputs.stacks) }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: docker compose config
+        run: |
+          docker compose -f "stacks/${{ matrix.stack }}/compose.yaml" \
+            --env-file "stacks/${{ matrix.stack }}/.env.example" config -q
+      - name: validate every declared profile
+        run: |
+          profiles=$(docker compose -f "stacks/${{ matrix.stack }}/compose.yaml" config --profiles || true)
+          for p in $profiles; do
+            echo "-- profile $p"
+            docker compose -f "stacks/${{ matrix.stack }}/compose.yaml" \
+              --env-file "stacks/${{ matrix.stack }}/.env.example" --profile "$p" config -q
+          done
+
+  smoke:
+    name: smoke (${{ matrix.stack }})
+    needs: lint-stacks
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # The light stacks. mssql (2.3 GB, slow start) and pytorch (6 GB) are
+        # deliberately excluded — they would dominate CI time for little signal.
+        include:
+          - { stack: postgres,            profiles: "--profile gui" }
+          - { stack: mysql,               profiles: "--profile gui" }
+          - { stack: mongodb,             profiles: "--profile gui" }
+          - { stack: redis,               profiles: "--profile gui" }
+          - { stack: nginx-static,        profiles: "" }
+          - { stack: nginx-proxy-manager, profiles: "" }
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: up and wait for healthy
+        working-directory: stacks/${{ matrix.stack }}
+        run: |
+          docker compose --env-file .env.example ${{ matrix.profiles }} \
+            up -d --build --wait --wait-timeout 300
+
+      - name: every container is healthy or running
+        working-directory: stacks/${{ matrix.stack }}
+        run: |
+          docker compose --env-file .env.example ${{ matrix.profiles }} ps
+          bad=$(docker compose --env-file .env.example ${{ matrix.profiles }} ps \
+                  --format json | jq -r 'select(.Health == "unhealthy") | .Name')
+          if [ -n "$bad" ]; then echo "unhealthy: $bad"; exit 1; fi
+
+      - name: data survives down but not down -v
+        working-directory: stacks/${{ matrix.stack }}
+        run: |
+          docker compose --env-file .env.example ${{ matrix.profiles }} down
+          before=$(docker volume ls -q | grep -c "^spinup-${{ matrix.stack }}_" || true)
+          if [ "$before" -eq 0 ]; then
+            echo "note: stack declares no volumes"
+          else
+            echo "volumes kept after down: $before"
+          fi
+          docker compose --env-file .env.example ${{ matrix.profiles }} down -v
+          after=$(docker volume ls -q | grep -c "^spinup-${{ matrix.stack }}_" || true)
+          if [ "$after" -ne 0 ]; then echo "down -v left $after volume(s)"; exit 1; fi
+
+      - name: logs on failure
+        if: failure()
+        working-directory: stacks/${{ matrix.stack }}
+        run: docker compose --env-file .env.example ${{ matrix.profiles }} logs --tail 100
+
+  # ------------------------------------------------------------------- go
+  # No-ops until Phase 2 lands main.go; kept here so the pipeline is complete.
+
+  go:
+    name: go
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - id: check
+        run: |
+          if [ -f go.mod ]; then echo "present=true" >> "$GITHUB_OUTPUT";
+          else echo "present=false" >> "$GITHUB_OUTPUT"; echo "no go.mod yet — skipping"; fi
+      - uses: actions/setup-go@v5
+        if: steps.check.outputs.present == 'true'
+        with:
+          go-version-file: go.mod
+          cache: true
+      - if: steps.check.outputs.present == 'true'
+        run: |
+          go vet ./...
+          go test ./... -race -count=1
+      - uses: golangci/golangci-lint-action@v6
+        if: steps.check.outputs.present == 'true'
