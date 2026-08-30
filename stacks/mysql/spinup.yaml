@@ -1,0 +1,16 @@
+name: mysql
+description: MySQL 8.4 with phpMyAdmin
+category: database
+primary: mysql
+cli: mysql -u ${MYSQL_USER} -p${MYSQL_PASSWORD} ${MYSQL_DATABASE}
+gui:
+  service: phpmyadmin
+  url: http://localhost:${PHPMYADMIN_PORT}
+  login: ${MYSQL_USER} / ${MYSQL_PASSWORD}
+url: mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@localhost:${MYSQL_PORT}/${MYSQL_DATABASE}
+ports:
+  - name: MYSQL_PORT
+    default: 3306
+  - name: PHPMYADMIN_PORT
+    default: 8081
+profiles: [gui]
