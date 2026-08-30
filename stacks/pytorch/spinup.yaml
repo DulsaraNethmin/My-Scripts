@@ -1,0 +1,22 @@
+name: pytorch
+description: PyTorch with JupyterLab, CPU or NVIDIA GPU
+category: ml
+primary: jupyter
+cli: /bin/bash
+gui:
+  service: jupyter
+  url: http://localhost:${JUPYTER_PORT}/lab?token=${JUPYTER_TOKEN}
+  login: token ${JUPYTER_TOKEN}
+url: http://localhost:${JUPYTER_PORT}/lab?token=${JUPYTER_TOKEN}
+ports:
+  - name: JUPYTER_PORT
+    default: 8888
+  - name: TENSORBOARD_PORT
+    default: 6006
+profiles: [cpu, gpu]
+# Neither service starts without a profile, so spinup selects this one unless
+# --gpu is passed, which swaps it for `gpu`.
+default_profiles: [cpu]
+gpu:
+  profile: gpu
+  service: jupyter-gpu
