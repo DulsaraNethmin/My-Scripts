@@ -100,7 +100,7 @@ cmd_start() {
 
 cmd_done() {
   local id="${1:-}"; [ -n "$id" ] || die "usage: progress.sh done <id>"
-  cmd_set "$id" done
+  cmd_set "$id" "done"
 }
 
 cmd_handoff() {

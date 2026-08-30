@@ -6,6 +6,7 @@ MODULE      := github.com/DulsaraNethmin/spinup
 BIN_DIR     := bin
 STACKS_DIR  := stacks
 PROGRESS    := ./scripts/progress.sh
+LINT_STACKS := ./scripts/lint-stacks.sh
 VERSION     := $(shell git describe --tags --always --dirty 2>/dev/null || echo dev)
 COMMIT      := $(shell git rev-parse --short HEAD 2>/dev/null || echo none)
 DATE        := $(shell date -u +%Y-%m-%dT%H:%M:%SZ)
@@ -16,7 +17,7 @@ HAS_GO_CODE := $(wildcard main.go)
 .DEFAULT_GOAL := help
 .PHONY: help status tasks next start done todo handoff build install run clean \
         test test-unit test-integration lint vet fmt tidy stacks-validate \
-        stacks-list doctor snapshot merge check
+        stacks-lint stacks-list doctor snapshot merge check
 
 ## ---------------------------------------------------------------- help
 
@@ -153,6 +154,9 @@ stacks-validate: ## docker compose config on every stack
 	done; \
 	exit $$fail
 
+stacks-lint: ## Structural lint of the stack catalog
+	@$(LINT_STACKS)
+
 doctor: ## Check the local dev toolchain
 	@printf '\n\033[1mdev environment\033[0m\n\n'
 	@printf '  go       %s\n' "$$(go version 2>/dev/null || echo 'MISSING')"
@@ -163,7 +167,7 @@ doctor: ## Check the local dev toolchain
 	@printf '  release  %s\n' "$$(command -v goreleaser >/dev/null 2>&1 && goreleaser --version 2>/dev/null | grep -iE 'version:' | head -1 || echo 'not installed (optional)')"
 	@printf '\n'
 
-check: vet lint test stacks-validate ## Everything CI runs
+check: vet lint test stacks-lint stacks-validate ## Everything CI runs
 
 snapshot: ## Local GoReleaser snapshot build
 	@command -v goreleaser >/dev/null 2>&1 \
