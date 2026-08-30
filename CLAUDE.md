@@ -72,8 +72,9 @@ make check             # vet + lint + test + stacks-validate — what CI runs
 make stacks-validate   # docker compose config on every stack
 ```
 
-Targets that need Go degrade to a no-op message until `main.go` exists (Phase 2),
-so `make check` is safe to run at any point in the roadmap.
+`make lint` needs **golangci-lint v2** (`.golangci.yml` is in the v2 format, which
+v1 cannot read); it is skipped when the binary isn't installed. CI pins the same
+version the code was linted against — bump both together.
 
 ## Layout
 
@@ -102,6 +103,11 @@ commands own the UX. Respect `NO_COLOR`.
 
 Exit codes: `0` ok, `1` usage, `2` docker unavailable, `3` stack not found,
 `4` compose failed.
+
+The catalog is embedded by `main.go`, not by `internal/catalog`: `go:embed` cannot
+reach outside its own package directory, so main owns the `embed.FS` and hands the
+subtree to `catalog.New`. Commands reach it through the command context
+(`catalog.FromContext`), which keeps them testable against a fixture catalog.
 
 **Stacks.** Every stack is a folder of four files — `compose.yaml`, `.env.example`,
 `spinup.yaml` (metadata the CLI reads), `README.md` (shown by `spinup info`). The CLI
@@ -139,6 +145,10 @@ location; user state lives in `~/.spinup/`.
   as healthy rather than embedding credentials in the probe.
 - Pin to a tag that exists — `docker manifest inspect <image>:<tag>` before
   writing it into a compose file. PLAN's suggested tags are not all real.
+- `//go:embed all:stacks` — the `all:` prefix is load-bearing. Without it `go:embed`
+  silently skips every file whose name starts with a dot, which is every stack's
+  `.env.example`. `main_test.go` compares the embedded tree against `stacks/` on
+  disk so that stays true.
 - macOS ships GNU Make 3.81, so the Makefile uses tabs and avoids `.RECIPEPREFIX`.
 - `docs/PLAN.md` §7 has open decisions. Settled so far: name is **spinup**; the CLI
   grows **in place** in this repo; junk files are deleted in a normal commit rather

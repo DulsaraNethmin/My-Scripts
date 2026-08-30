@@ -55,4 +55,16 @@ defaults, and GUIs on non-colliding `80xx` ports recorded in `docs/PORTS.md`.
   a smoke matrix that brings the light stacks up and asserts `down -v` really
   removes volumes.
 
+### Added — CLI skeleton (Phase 2)
+
+- Go module `github.com/DulsaraNethmin/spinup`: `main.go`, a Cobra command surface
+  under `cmd/`, and the `internal/{catalog,compose,docker,config,ui}` packages.
+- The stack catalog is compiled into the binary with `go:embed`, so an installed
+  spinup needs no clone and no network to bring a stack up.
+- `spinup version` (`--short` for scripts), a global `--no-color`, and the exit
+  codes from `docs/PLAN.md` §3 — `1` usage, `2` docker unavailable, `3` stack not
+  found, `4` compose failed.
+- CI now vets, tests, lints and cross-compiles all six release targets, and
+  asserts the embedded catalog matches `stacks/` on disk.
+
 [unreleased]: https://github.com/DulsaraNethmin/My-Scripts/commits/main
