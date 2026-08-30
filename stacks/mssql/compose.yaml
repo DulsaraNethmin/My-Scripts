@@ -1,0 +1,27 @@
+name: spinup-mssql
+
+services:
+  mssql:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    # Microsoft publishes this image for amd64 only. On Apple Silicon it runs
+    # under emulation, which Docker Desktop handles but which is slow.
+    platform: linux/amd64
+    restart: unless-stopped
+    environment:
+      ACCEPT_EULA: ${MSSQL_ACCEPT_EULA:-Y}
+      # SA_PASSWORD is deprecated in 2022; the image reads MSSQL_SA_PASSWORD.
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD:-Spinup!Passw0rd}
+      MSSQL_PID: ${MSSQL_EDITION:-Developer}
+    ports:
+      - "${MSSQL_PORT:-1433}:1433"
+    volumes:
+      - mssql-data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S 127.0.0.1 -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -Q 'SELECT 1' -b -o /dev/null"]
+      interval: 10s
+      timeout: 10s
+      retries: 30
+      start_period: 60s
+
+volumes:
+  mssql-data:
