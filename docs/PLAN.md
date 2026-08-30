@@ -283,3 +283,8 @@ ship a README before merging.
 4. **Traefik integration** — opt-in shared `spinup` network so `http://pgadmin.localhost` works
    when traefik is running; stacks join it only if `spinup config set traefik true`.
 5. **Go module path** — `github.com/DulsaraNethmin/spinup` (public repo name must match).
+   *Settled in task 2.1: the module is `github.com/DulsaraNethmin/spinup`.*
+6. **First release number** — the repo already carries a `v1.0.0` tag from its My-Scripts
+   days, so `git describe` reports `v1.0.0-N-g<sha>` and a v0.1.0 release would sort
+   *below* a tag that is already published. Either delete/move the old tag, or start the
+   CLI's releases at `v1.1.0`.
