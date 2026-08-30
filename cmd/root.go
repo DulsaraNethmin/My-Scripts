@@ -18,6 +18,7 @@ import (
 
 	"github.com/DulsaraNethmin/spinup/internal/catalog"
 	"github.com/DulsaraNethmin/spinup/internal/config"
+	"github.com/DulsaraNethmin/spinup/internal/docker"
 	"github.com/DulsaraNethmin/spinup/internal/ui"
 )
 
@@ -129,7 +130,10 @@ func newRootCmd(b Build) *cobra.Command {
 		return failf(ExitUsage, "%w", err)
 	})
 
-	root.AddCommand(newVersionCmd(b))
+	root.AddCommand(
+		newDoctorCmd(docker.New()),
+		newVersionCmd(b),
+	)
 
 	return root
 }

@@ -51,7 +51,7 @@ func LoadConfig(path string) (Config, error) {
 		if errors.Is(err, io.EOF) {
 			return DefaultConfig(), nil
 		}
-		return DefaultConfig(), fmt.Errorf("%s: %w", path, err)
+		return DefaultConfig(), configError(path, err)
 	}
 	return cfg, nil
 }
@@ -100,6 +100,18 @@ func (c *Config) Set(key, value string) error {
 	default:
 		return unknownKey(key)
 	}
+}
+
+// configError rewrites a yaml decoding error for someone who is editing a
+// config file, not reading Go: no type names, no multi-line layout, and the
+// keys that would have been accepted.
+func configError(path string, err error) error {
+	msg := strings.ReplaceAll(err.Error(), "\n", "; ")
+	msg = strings.ReplaceAll(msg, " in type config.Config", "")
+	msg = strings.TrimPrefix(msg, "yaml: unmarshal errors:; ")
+	msg = strings.Join(strings.Fields(msg), " ")
+
+	return fmt.Errorf("%s: %s (known keys: %s)", path, msg, strings.Join(Keys(), ", "))
 }
 
 func unknownKey(key string) error {
