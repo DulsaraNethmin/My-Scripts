@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"slices"
+	"strings"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -170,6 +171,42 @@ func splitDashArgs(cmd *cobra.Command, args []string) (stacks, passthrough []str
 		return args, nil
 	}
 	return args[:at], args[at:]
+}
+
+// completeStacks completes a stack name from the catalog. It is what makes
+// `spinup up <tab>` worth having completions for at all, and it is why every
+// stack-taking command sets ValidArgsFunction.
+//
+// Names already on the line are dropped, so completing the second stack of
+// `spinup up postgres <tab>` does not offer postgres again.
+func completeStacks(cmd *cobra.Command, args []string, prefix string) ([]string, cobra.ShellCompDirective) {
+	cat, ok := catalog.FromContext(cmd.Context())
+	if !ok {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+
+	names, err := cat.Names()
+	if err != nil {
+		// A broken stack in ~/.spinup/stacks must not break the shell.
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+
+	out := make([]string, 0, len(names))
+	for _, n := range names {
+		if !strings.HasPrefix(n, prefix) || slices.Contains(args, n) {
+			continue
+		}
+		out = append(out, n)
+	}
+	return out, cobra.ShellCompDirectiveNoFileComp
+}
+
+// completeOneStack is completeStacks for the commands that take exactly one.
+func completeOneStack(cmd *cobra.Command, args []string, prefix string) ([]string, cobra.ShellCompDirective) {
+	if len(args) > 0 {
+		return nil, cobra.ShellCompDirectiveNoFileComp
+	}
+	return completeStacks(cmd, args, prefix)
 }
 
 // heading announces which stack is being worked on, for the multi-stack case.

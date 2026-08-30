@@ -24,7 +24,8 @@ func newDestroyCmd() *cobra.Command {
 			"command that deletes anything, and it asks first unless you pass -y.\n\n" +
 			"The stack's env file and its copy in ~/.spinup/stacks are left alone;\n" +
 			"only the data goes.",
-		Args: cobra.MinimumNArgs(1),
+		Args:              cobra.MinimumNArgs(1),
+		ValidArgsFunction: completeStacks,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 			out := cmd.OutOrStdout()

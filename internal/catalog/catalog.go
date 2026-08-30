@@ -113,6 +113,25 @@ func (c *Catalog) Has(name string) bool {
 	return ok
 }
 
+// HasBuiltin reports whether the binary ships a copy of the stack, whatever the
+// user's own catalog holds. `spinup reset` needs it: restoring a stack means
+// deleting the user's copy, which for a stack that only exists there would not
+// be a restore but a delete.
+func (c *Catalog) HasBuiltin(name string) bool {
+	if !ValidName(name) {
+		return false
+	}
+	for _, l := range c.layers {
+		if l.origin != OriginBuiltin {
+			continue
+		}
+		if info, err := fs.Stat(l.fsys, name); err == nil && info.IsDir() {
+			return true
+		}
+	}
+	return false
+}
+
 // Origin says which layer a stack comes from.
 func (c *Catalog) Origin(name string) (Origin, error) {
 	l, ok := c.find(name)

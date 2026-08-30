@@ -33,7 +33,8 @@ func newShellCmd() *cobra.Command {
 			"service unless you name another one.\n\n" +
 			"It is `docker compose exec` with the project, file and env file already\n" +
 			"right, and your terminal handed straight to the container.",
-		Args: cobra.RangeArgs(1, 2),
+		Args:              cobra.RangeArgs(1, 2),
+		ValidArgsFunction: completeOneStack,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 
@@ -148,7 +149,8 @@ func newCLICmd() *cobra.Command {
 			"mysql for mysql, mongosh for mongodb, redis-cli for redis — already\n" +
 			"pointed at the database and authenticated with the stack's credentials.\n\n" +
 			"Anything after -- is passed to the client.",
-		Args: cobra.MinimumNArgs(1),
+		Args:              cobra.MinimumNArgs(1),
+		ValidArgsFunction: completeOneStack,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 

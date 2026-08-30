@@ -131,6 +131,58 @@ func TestFS(t *testing.T) {
 	}
 }
 
+// HasBuiltin answers a question Origin cannot: whether the binary still has a
+// copy of a stack the user has since edited. `spinup reset` turns on it —
+// restoring means deleting the user's copy, which for a stack that exists only
+// there would be a delete, not a restore.
+func TestHasBuiltin(t *testing.T) {
+	c := catalog.New(stackFiles("postgres", "PostgreSQL 16")).
+		WithUserStacks(merge(stackFiles("postgres", "my edited postgres"), stackFiles("mine", "all my own")))
+
+	if !c.HasBuiltin("postgres") {
+		t.Error("HasBuiltin(postgres) = false, but the built-in copy is still there")
+	}
+	if c.HasBuiltin("mine") {
+		t.Error("HasBuiltin(mine) = true, but it only exists in the user's catalog")
+	}
+	if c.HasBuiltin("nosuchstack") {
+		t.Error("HasBuiltin of a stack nothing has = true")
+	}
+	if c.HasBuiltin("../escape") {
+		t.Error("HasBuiltin accepted a path as a stack name")
+	}
+
+	// The user's copy still wins for everything else.
+	if origin, err := c.Origin("postgres"); err != nil || origin != catalog.OriginUser {
+		t.Errorf("Origin(postgres) = %q, %v; want user", origin, err)
+	}
+}
+
+// A scaffolded stack has to load, or `spinup new` hands the user something
+// broken and blames them for it.
+func TestScaffoldLoads(t *testing.T) {
+	files := catalog.Scaffold("my-thing")
+
+	mapfs := fstest.MapFS{}
+	for path, data := range files {
+		mapfs["my-thing/"+path] = &fstest.MapFile{Data: data}
+	}
+
+	for _, want := range catalog.RequiredFiles {
+		if _, ok := files[want]; !ok {
+			t.Errorf("Scaffold did not produce %s", want)
+		}
+	}
+
+	s, err := catalog.New(mapfs).Load("my-thing")
+	if err != nil {
+		t.Fatalf("a scaffolded stack does not load: %v", err)
+	}
+	if s.Primary == "" || len(s.Ports) == 0 || s.URL == "" {
+		t.Errorf("Scaffold produced an under-specified stack: %+v", s)
+	}
+}
+
 func TestMissingFiles(t *testing.T) {
 	c := fixture()
 

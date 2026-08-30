@@ -187,6 +187,23 @@ defaults, and GUIs on non-colliding `80xx` ports recorded in `docs/PORTS.md`.
   browser with the login beside it (`--print` for a headless machine).
   `spinup info <stack>` is the stack's page: what it is, its ports,
   credentials and addresses, then its README.
+- `spinup new <name>` scaffolds a stack of your own into
+  `~/.spinup/stacks/<name>/` — and what it writes runs as it stands: an nginx
+  that comes up healthy on the first `spinup up`, carrying every convention a
+  stack has to follow (a pinned tag, env-driven ports with inline defaults, a
+  healthcheck against 127.0.0.1, a named volume) as something to copy rather
+  than a comment to read. `--from <stack>` starts from a copy of an existing
+  stack instead, with the name in its `spinup.yaml` rewritten so the copy
+  loads, and a warning that it inherits the original's ports.
+- `spinup reset <stack>` puts back the copy of a built-in stack compiled into
+  the binary, for when an edit has broken it. It asks first, keeps the env
+  file with its edited ports and passwords unless `--env` says otherwise, and
+  never touches a data volume. A stack of your own is refused rather than
+  reset: there is no other copy to restore it from, so it would be a delete.
+- `spinup up <tab>` completes stack names, in every command that takes one.
+  Cobra's `completion` command generates the scripts; what makes them useful
+  is that the names come from the live catalog, the user's own stacks
+  included, and that a name already on the line is not offered twice.
 - A command that needs a running stack says so — "redis is not running —
   start it with `spinup up redis`" — rather than passing compose's own
   "service is not running" through.

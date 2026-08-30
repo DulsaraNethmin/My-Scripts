@@ -62,8 +62,13 @@ Conventions:
 | `8095` | monitoring            | Grafana              |
 | `8096` | keycloak              | admin console        |
 | `8097` | mariadb               | Adminer (stack-local)|
+| `8099` | *(scaffold)*          | `spinup new` default |
 
 ## Exceptions
+
+`8099` is not a stack: it is the port `spinup new` puts in a scaffolded stack,
+kept out of the table above so a new stack of your own does not collide with a
+built-in one on its first `spinup up`.
 
 `nginx-proxy-manager` binds `80`, `443` and `81` by design — it *is* the edge
 proxy. It is the one stack that expects to own port 80, and it cannot run

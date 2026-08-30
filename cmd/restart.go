@@ -14,7 +14,8 @@ func newRestartCmd() *cobra.Command {
 		Short: "Restart one or more stacks",
 		Long: "restart restarts a stack's containers in place. Data is untouched, and so\n" +
 			"is anything you changed in the stack's env file — those need an up.",
-		Args: cobra.MinimumNArgs(1),
+		Args:              cobra.MinimumNArgs(1),
+		ValidArgsFunction: completeStacks,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			ctx := cmd.Context()
 			out := cmd.OutOrStdout()
