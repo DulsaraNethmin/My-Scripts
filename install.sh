@@ -1,0 +1,217 @@
+#!/bin/sh
+# Install spinup on macOS or Linux.
+#
+#   curl -fsSL https://raw.githubusercontent.com/DulsaraNethmin/spinup/main/install.sh | sh
+#
+# Downloads the release archive for this platform, checks it against the
+# release's checksums.txt, and installs one binary. The stack catalog is
+# compiled into that binary, so there is nothing else to place.
+#
+# Options (flags, or the environment variables in brackets):
+#   --version <v>   install a specific release, e.g. v1.1.0   [SPINUP_VERSION]
+#   --dir <path>    install into this directory               [SPINUP_INSTALL_DIR]
+#   --help          this text
+#
+# SPINUP_REPO and SPINUP_API point the script at another repository or API,
+# which is how its own test drives it against a local server.
+
+set -eu
+
+REPO="${SPINUP_REPO:-DulsaraNethmin/spinup}"
+API="${SPINUP_API:-https://api.github.com}"
+VERSION="${SPINUP_VERSION:-latest}"
+INSTALL_DIR="${SPINUP_INSTALL_DIR:-}"
+
+BOLD=''
+DIM=''
+RESET=''
+if [ -t 1 ] && [ -z "${NO_COLOR:-}" ]; then
+	BOLD=$(printf '\033[1m')
+	DIM=$(printf '\033[2m')
+	RESET=$(printf '\033[0m')
+fi
+
+die() {
+	printf '%s\n' "install.sh: $*" >&2
+	exit 1
+}
+
+say() { printf '%s\n' "$*"; }
+
+# usage prints this script's own header comment, so the two cannot drift.
+usage() {
+	awk 'NR>1 && /^#/ { sub(/^# ?/, ""); print; next } NR>1 { exit }' "$0"
+}
+
+have() { command -v "$1" >/dev/null 2>&1; }
+
+# fetch prints a URL's body on stdout. curl and wget are both common enough
+# that requiring a particular one would fail on someone's machine.
+fetch() {
+	if have curl; then
+		curl -fsSL "$1"
+	elif have wget; then
+		wget -qO- "$1"
+	else
+		die "neither curl nor wget is installed"
+	fi
+}
+
+download() {
+	if have curl; then
+		curl -fsSL -o "$2" "$1"
+	elif have wget; then
+		wget -qO "$2" "$1"
+	else
+		die "neither curl nor wget is installed"
+	fi
+}
+
+sha256() {
+	if have sha256sum; then
+		sha256sum "$1" | cut -d' ' -f1
+	elif have shasum; then
+		shasum -a 256 "$1" | cut -d' ' -f1
+	else
+		die "no sha256sum or shasum, so the download cannot be verified"
+	fi
+}
+
+# json_field pulls one string value out of a JSON object. The releases API
+# answers with a single object and this script needs two fields out of it;
+# depending on jq being installed would be a worse trade than this.
+json_field() {
+	tr ',' '\n' | sed -n 's/.*"'"$1"'":"\([^"]*\)".*/\1/p' | head -n 1
+}
+
+platform() {
+	os=$(uname -s | tr '[:upper:]' '[:lower:]')
+	case "$os" in
+	linux | darwin) ;;
+	*) die "unsupported operating system: $os (spinup ships macOS, Linux and Windows builds)" ;;
+	esac
+
+	arch=$(uname -m)
+	case "$arch" in
+	x86_64 | amd64) arch=amd64 ;;
+	aarch64 | arm64) arch=arm64 ;;
+	*) die "unsupported architecture: $arch (spinup ships amd64 and arm64)" ;;
+	esac
+
+	printf '%s_%s' "$os" "$arch"
+}
+
+# install_dir picks where the binary goes: what the user asked for, else the
+# first of the usual directories that can be written to.
+install_dir() {
+	if [ -n "$INSTALL_DIR" ]; then
+		printf '%s' "$INSTALL_DIR"
+		return
+	fi
+	for dir in /usr/local/bin "$HOME/.local/bin"; do
+		if [ -d "$dir" ] && [ -w "$dir" ]; then
+			printf '%s' "$dir"
+			return
+		fi
+	done
+	# Nothing writable: ~/.local/bin is the one this script may create.
+	printf '%s' "$HOME/.local/bin"
+}
+
+while [ $# -gt 0 ]; do
+	case "$1" in
+	--version)
+		[ $# -ge 2 ] || die "--version needs a value"
+		VERSION="$2"
+		shift 2
+		;;
+	--dir)
+		[ $# -ge 2 ] || die "--dir needs a value"
+		INSTALL_DIR="$2"
+		shift 2
+		;;
+	-h | --help)
+		usage
+		exit 0
+		;;
+	*) die "unknown option: $1 (try --help)" ;;
+	esac
+done
+
+target=$(platform)
+
+if [ "$VERSION" = latest ]; then
+	release_url="$API/repos/$REPO/releases/latest"
+else
+	release_url="$API/repos/$REPO/releases/tags/$VERSION"
+fi
+
+release=$(fetch "$release_url") || die "cannot read $release_url"
+tag=$(printf '%s' "$release" | json_field tag_name)
+[ -n "$tag" ] || die "$REPO has no release for '$VERSION'"
+
+# The archive names have no leading v; the tags do.
+number=${tag#v}
+archive="spinup_${number}_${target}.tar.gz"
+
+# Splitting on commas puts each asset's download URL on its own line, which is
+# enough structure to pick one out without a JSON parser.
+asset_url() {
+	printf '%s' "$release" | tr ',' '\n' | grep browser_download_url | grep -F "/$1" |
+		sed -n 's/.*"browser_download_url":"\([^"]*\)".*/\1/p' | head -n 1
+}
+
+archive_url=$(asset_url "$archive")
+[ -n "$archive_url" ] || die "$tag has no $archive — spinup may not ship a build for $target yet"
+
+checksums_url=$(asset_url checksums.txt)
+[ -n "$checksums_url" ] || die "$tag has no checksums.txt, so the download cannot be verified"
+
+tmp=$(mktemp -d)
+trap 'rm -rf "$tmp"' EXIT INT TERM
+
+say "${DIM}downloading${RESET} $archive ($tag)"
+download "$archive_url" "$tmp/$archive"
+download "$checksums_url" "$tmp/checksums.txt"
+
+want=$(grep " $archive\$" "$tmp/checksums.txt" | cut -d' ' -f1 | head -n 1)
+[ -n "$want" ] || die "checksums.txt has no entry for $archive"
+got=$(sha256 "$tmp/$archive")
+[ "$got" = "$want" ] || die "$archive does not match its checksum
+  got  $got
+  want $want"
+
+tar -xzf "$tmp/$archive" -C "$tmp" spinup || die "the archive has no spinup binary in it"
+chmod +x "$tmp/spinup"
+
+dir=$(install_dir)
+mkdir -p "$dir" 2>/dev/null || true
+
+if [ -w "$dir" ]; then
+	mv "$tmp/spinup" "$dir/spinup"
+elif have sudo; then
+	say "${DIM}$dir needs root — using sudo${RESET}"
+	sudo mv "$tmp/spinup" "$dir/spinup"
+else
+	die "cannot write to $dir. Re-run with --dir \$HOME/.local/bin, or as root."
+fi
+
+say ""
+say "${BOLD}spinup $tag${RESET} installed at $dir/spinup"
+
+case ":$PATH:" in
+*":$dir:"*) ;;
+*)
+	say ""
+	say "$dir is not on your PATH. Add it:"
+	say "  ${DIM}export PATH=\"$dir:\$PATH\"${RESET}"
+	;;
+esac
+
+say ""
+say "Next:"
+say "  ${DIM}spinup doctor${RESET}          check Docker is ready"
+say "  ${DIM}spinup list${RESET}            the stack catalog"
+say "  ${DIM}spinup up postgres${RESET}     Postgres 16 + pgAdmin"
+say ""
+say "Shell completion: ${DIM}spinup completion --help${RESET}"

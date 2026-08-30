@@ -145,6 +145,21 @@ defaults, and GUIs on non-colliding `80xx` ports recorded in `docs/PORTS.md`.
   the archives and, from 3.3, `install.sh`. The cask strips the quarantine
   attribute macOS puts on an unsigned download, and `brew uninstall --zap`
   removes `~/.spinup`, which a plain uninstall leaves alone.
+- `install.sh` and `install.ps1`: a one-line install for macOS, Linux and
+  Windows that reads the latest release, checks the archive against the
+  release's `checksums.txt` before it installs anything, and puts a single
+  binary on the PATH. Both take `--version` and `--dir`, and both refuse to
+  install a download whose checksum does not match. `install.sh` is tested
+  end to end against a local release server, so what CI runs is the script
+  users pipe into `sh`.
+- `spinup update`: replaces the running binary with the latest release, after
+  the same checksum check. It stops when Homebrew or Scoop owns the binary —
+  overwriting a file the package manager tracks is undone by the next upgrade
+  — and prints the command to use instead; `--check` only reports, `--force`
+  overrides. `SPINUP_REPO` and `SPINUP_API` point it at another repository.
+- Shell completions come with a Homebrew install: the cask generates them from
+  the binary it just installed, so `spinup up <tab>` completes with nothing to
+  source. Elsewhere `spinup completion bash|zsh|fish|powershell` prints them.
 - `docs/RELEASING.md`: the one-time setup a release needs — the two
   repositories, the `TAP_GITHUB_TOKEN` secret, the dry run, the tag, and how
   to back a release out before anyone has installed it.

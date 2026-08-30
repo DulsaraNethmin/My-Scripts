@@ -101,6 +101,27 @@ Homebrew is a **cask**, not a formula: GoReleaser deprecated formula generation
 in favour of casks, and casks are macOS-only. Linux users get the archives and
 `install.sh`; `brew` on Linux cannot install a cask.
 
+## How people get the update
+
+Each of these reads the release the workflow just published, so nothing extra
+has to be done for them:
+
+| Installed with | Updates with |
+| --- | --- |
+| Homebrew (macOS) | `brew upgrade spinup` |
+| Scoop (Windows) | `scoop update spinup` |
+| `install.sh` / `install.ps1` | `spinup update`, or re-run the installer |
+| The archive, by hand | `spinup update` |
+
+`spinup update` downloads the archive for the running platform, checks it
+against `checksums.txt`, and replaces the binary in place. It refuses to touch
+a binary Homebrew or Scoop owns — that file belongs to the package manager, and
+overwriting it is undone by the next upgrade — and prints the right command
+instead. `spinup update --check` only reports.
+
+Both installers read the same release through the API, so a release missing its
+`checksums.txt` breaks them: nothing installs unverified.
+
 ## When a release goes wrong
 
 A tag can be replaced as long as nobody has installed it yet:

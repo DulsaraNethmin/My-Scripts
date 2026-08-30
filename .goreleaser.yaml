@@ -135,6 +135,18 @@ homebrew_casks:
           if system_command("/usr/bin/xattr", args: ["-h"]).exit_status == 0
             system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/spinup"]
           end
+    # Homebrew generates the completion scripts by running the binary it just
+    # installed, so `spinup up <tab>` works after a brew install with nothing
+    # for the user to source.
+    generate_completions_from_executable:
+      executable: spinup
+      args:
+        - completion
+      shells:
+        - bash
+        - zsh
+        - fish
+
     # `brew uninstall` leaves ~/.spinup alone — it holds the user's stacks and
     # env files. `brew uninstall --zap` is the one that says to delete it.
     zap:
