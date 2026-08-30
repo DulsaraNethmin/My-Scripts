@@ -4,10 +4,15 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"os"
+	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
+	"testing/fstest"
 
 	"github.com/DulsaraNethmin/spinup/internal/catalog"
+	"github.com/DulsaraNethmin/spinup/internal/config"
 )
 
 func TestCodeFor(t *testing.T) {
@@ -81,5 +86,46 @@ func TestUnknownFlagIsUsageError(t *testing.T) {
 	}
 	if got := codeFor(err); got != ExitUsage {
 		t.Errorf("unknown flag exits %d, want %d", got, ExitUsage)
+	}
+}
+
+// The user's own stacks in ~/.spinup/stacks shadow the built-in ones. This is
+// the wiring between config's paths and the catalog's layers, which nothing
+// else exercises until `up` lands.
+func TestUserCatalogLayersUserStacks(t *testing.T) {
+	home := t.TempDir()
+	t.Setenv(config.HomeEnv, home)
+
+	dir := filepath.Join(home, "stacks", "my-thing")
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	const meta = "name: my-thing\ndescription: a stack of my own\ncategory: tooling\nprimary: thing\n" +
+		"url: http://localhost:${THING_PORT}\nports:\n  - name: THING_PORT\n    default: 9999\n"
+	if err := os.WriteFile(filepath.Join(dir, "spinup.yaml"), []byte(meta), 0o644); err != nil {
+		t.Fatal(err)
+	}
+
+	cat := userCatalog(fstest.MapFS{
+		"postgres/spinup.yaml": &fstest.MapFile{
+			Data: []byte("name: postgres\ndescription: PostgreSQL 16\ncategory: database\nprimary: postgres\n" +
+				"url: postgres://localhost:${POSTGRES_PORT}\nports:\n  - name: POSTGRES_PORT\n    default: 5432\n"),
+		},
+	})
+
+	names, err := cat.Names()
+	if err != nil {
+		t.Fatalf("Names: %v", err)
+	}
+	if want := []string{"my-thing", "postgres"}; !slices.Equal(names, want) {
+		t.Fatalf("Names = %v, want %v", names, want)
+	}
+
+	s, err := cat.Load("my-thing")
+	if err != nil {
+		t.Fatalf("Load: %v", err)
+	}
+	if s.Origin != catalog.OriginUser {
+		t.Errorf("Origin = %q, want %q", s.Origin, catalog.OriginUser)
 	}
 }
