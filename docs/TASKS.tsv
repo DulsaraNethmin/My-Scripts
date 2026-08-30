@@ -16,7 +16,7 @@
 1.9|Phase 1 — Catalog v1|done|task/1.9-setup-scripts|setup/: split docker-setup.sh into docker-{ubuntu,fedora,macos}.sh, compose v2
 2.1|Phase 2 — CLI core|done|task/2.1-go-skeleton|Go module, Cobra skeleton, go:embed of stacks/
 2.2|Phase 2 — CLI core|done|task/2.2-catalog|internal/catalog: spinup.yaml parsing, materialise to ~/.spinup
-2.3|Phase 2 — CLI core|todo|task/2.3-config-env|internal/config: config.yaml, per-stack env merge
+2.3|Phase 2 — CLI core|done|task/2.3-config-env|internal/config: config.yaml, per-stack env merge
 2.4|Phase 2 — CLI core|todo|task/2.4-docker-doctor|internal/docker + doctor command
 2.5|Phase 2 — CLI core|todo|task/2.5-compose-wrap|internal/compose: docker compose exec wrapper
 2.6|Phase 2 — CLI core|todo|task/2.6-lifecycle-cmds|Commands: up, down, restart, destroy

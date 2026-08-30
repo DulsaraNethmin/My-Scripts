@@ -70,6 +70,12 @@ defaults, and GUIs on non-colliding `80xx` ports recorded in `docs/PORTS.md`.
   mistyped key is an error rather than being silently ignored, and every rule
   a stack must satisfy is reported in one pass. `internal/catalog` and
   `scripts/lint-stacks.sh` now enforce the same rules.
+- `~/.spinup/config.yaml` with `gui` (GUIs come up with their stack by default),
+  read strictly so a mistyped key is reported rather than silently doing nothing.
+- Per-stack environment resolution: `spinup.yaml` port defaults, then the stack's
+  `.env.example`, then `~/.spinup/env/<stack>.env`, then the process environment
+  for variables the stack already defines — the same precedence `docker compose`
+  applies to `--env-file`, verified against compose itself in an integration test.
 - Stacks materialise into `~/.spinup/stacks/<name>/` with their env file seeded
   from `.env.example` — never overwriting a file that is already there, because
   the point of writing them out is that they can be edited. `~/.spinup/stacks`

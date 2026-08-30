@@ -9,12 +9,12 @@ import (
 	"github.com/DulsaraNethmin/spinup/internal/config"
 )
 
-func TestDefaultUsesHome(t *testing.T) {
+func TestDefaultPathsUsesHome(t *testing.T) {
 	t.Setenv(config.HomeEnv, "")
 
-	p, err := config.Default()
+	p, err := config.DefaultPaths()
 	if err != nil {
-		t.Fatalf("Default: %v", err)
+		t.Fatalf("DefaultPaths: %v", err)
 	}
 
 	home, err := os.UserHomeDir()
@@ -26,13 +26,13 @@ func TestDefaultUsesHome(t *testing.T) {
 	}
 }
 
-func TestDefaultHonoursSpinupHome(t *testing.T) {
+func TestDefaultPathsHonoursSpinupHome(t *testing.T) {
 	dir := t.TempDir()
 	t.Setenv(config.HomeEnv, dir)
 
-	p, err := config.Default()
+	p, err := config.DefaultPaths()
 	if err != nil {
-		t.Fatalf("Default: %v", err)
+		t.Fatalf("DefaultPaths: %v", err)
 	}
 	if p.Root != dir {
 		t.Errorf("Root = %q, want %q", p.Root, dir)
@@ -41,12 +41,12 @@ func TestDefaultHonoursSpinupHome(t *testing.T) {
 
 // A relative SPINUP_HOME has to be resolved once, up front: spinup runs
 // docker compose from the stack directory, so a relative path would move.
-func TestDefaultResolvesRelativeHome(t *testing.T) {
+func TestDefaultPathsResolvesRelativeHome(t *testing.T) {
 	t.Setenv(config.HomeEnv, "relative-spinup-home")
 
-	p, err := config.Default()
+	p, err := config.DefaultPaths()
 	if err != nil {
-		t.Fatalf("Default: %v", err)
+		t.Fatalf("DefaultPaths: %v", err)
 	}
 	if !filepath.IsAbs(p.Root) {
 		t.Errorf("Root = %q, want an absolute path", p.Root)
