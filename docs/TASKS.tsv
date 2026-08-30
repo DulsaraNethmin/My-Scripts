@@ -2,7 +2,7 @@
 # Format: id|phase|status|branch|title
 # status: todo (not started) | wip (in progress) | done | manual (user action, not Claude's)
 # Edit via `make start ID=x.y` / `make done ID=x.y`, or by hand.
-0.1|Phase 0 — Repo hygiene|todo|task/0.1-repo-hygiene|Purge junk files, real .gitignore + .editorconfig + CHANGELOG
+0.1|Phase 0 — Repo hygiene|wip|task/0.1-repo-hygiene|Purge junk files, real .gitignore + .editorconfig + CHANGELOG
 0.2|Phase 0 — Repo hygiene|done|main|Bootstrap dev tooling: CLAUDE.md, Makefile, progress tracker
 0.3|Phase 0 — Repo hygiene|manual|-|Rename GitHub repo My-Scripts to spinup, set description + topics
 1.1|Phase 1 — Catalog v1|todo|task/1.1-stack-postgres|stacks/postgres: compose.yaml, spinup.yaml, .env.example, README
@@ -13,6 +13,7 @@
 1.6|Phase 1 — Catalog v1|todo|task/1.6-stack-pytorch|stacks/pytorch: GPU behind gpu profile, Jupyter token on
 1.7|Phase 1 — Catalog v1|todo|task/1.7-stack-nginx|stacks/nginx-static + nginx-proxy-manager, build locally, fix YAML
 1.8|Phase 1 — Catalog v1|todo|task/1.8-ci-compose|CI: docker compose config for every stack
+1.9|Phase 1 — Catalog v1|todo|task/1.9-setup-scripts|setup/: split docker-setup.sh into docker-{ubuntu,fedora,macos}.sh, compose v2
 2.1|Phase 2 — CLI core|todo|task/2.1-go-skeleton|Go module, Cobra skeleton, go:embed of stacks/
 2.2|Phase 2 — CLI core|todo|task/2.2-catalog|internal/catalog: spinup.yaml parsing, materialise to ~/.spinup
 2.3|Phase 2 — CLI core|todo|task/2.3-config-env|internal/config: config.yaml, per-stack env merge

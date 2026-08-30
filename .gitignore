@@ -1,5 +1,58 @@
-mssql/*.sql
-mysql/*.sql
-# build artefacts (Makefile)
+# ---- build artefacts ----
 bin/
 dist/
+*.exe
+*.dll
+*.so
+*.dylib
+/spinup
+
+# ---- Go ----
+*.test
+*.out
+coverage.*
+vendor/
+go.work
+go.work.sum
+
+# ---- local runtime state ----
+# Stacks ship .env.example (tracked); the real .env is per-machine.
+.env
+*.env
+!.env.example
+!*.env.example
+
+# ---- database dumps / seed data ----
+*.sql
+*.sqlite
+*.sqlite3
+*.dump
+
+# ---- terraform (no longer in this repo; guard against re-adding) ----
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+crash.log
+
+# ---- archives ----
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+
+# ---- editors ----
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.claude/
+
+# ---- OS ----
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+desktop.ini
+*.desktop
