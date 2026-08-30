@@ -70,6 +70,10 @@ defaults, and GUIs on non-colliding `80xx` ports recorded in `docs/PORTS.md`.
   mistyped key is an error rather than being silently ignored, and every rule
   a stack must satisfy is reported in one pass. `internal/catalog` and
   `scripts/lint-stacks.sh` now enforce the same rules.
+- Integration tests in CI: the compose wrapper and the CLI both bring redis up
+  against a real daemon and assert the data-safety invariant in both
+  directions. The CLI test installs its own copy of the stack under another
+  name, so it can never touch a stack the developer is running.
 - `spinup list`, `ps`, `logs` and `env`. `list` works without Docker (the status
   column is all that needs it) and `-q` prints bare names for scripting; `env`
   shows a stack's resolved ports and credentials, or opens the file in $EDITOR.

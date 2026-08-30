@@ -166,3 +166,21 @@ jobs:
       - uses: golangci/golangci-lint-action@v8
         with:
           version: v2.12.2
+
+  # ---------------------------------------------------------- integration
+  # The tests that need a docker daemon: they bring redis up through the
+  # compose wrapper and through the CLI itself, and check that `down` keeps
+  # data while `destroy` removes it.
+
+  integration:
+    name: integration
+    needs: go
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: go test -tags integration
+        run: go test ./... -tags integration -count=1 -timeout 15m
