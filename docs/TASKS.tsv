@@ -2,7 +2,7 @@
 # Format: id|phase|status|branch|title
 # status: todo (not started) | wip (in progress) | done | manual (user action, not Claude's)
 # Edit via `make start ID=x.y` / `make done ID=x.y`, or by hand.
-0.1|Phase 0 — Repo hygiene|wip|task/0.1-repo-hygiene|Purge junk files, real .gitignore + .editorconfig + CHANGELOG
+0.1|Phase 0 — Repo hygiene|done|task/0.1-repo-hygiene|Purge junk files, real .gitignore + .editorconfig + CHANGELOG
 0.2|Phase 0 — Repo hygiene|done|main|Bootstrap dev tooling: CLAUDE.md, Makefile, progress tracker
 0.3|Phase 0 — Repo hygiene|manual|-|Rename GitHub repo My-Scripts to spinup, set description + topics
 1.1|Phase 1 — Catalog v1|todo|task/1.1-stack-postgres|stacks/postgres: compose.yaml, spinup.yaml, .env.example, README
