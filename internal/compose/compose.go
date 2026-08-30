@@ -161,6 +161,29 @@ func (r *Runner) stream(ctx context.Context, dir string, args []string) error {
 	return nil
 }
 
+// Attach runs a compose subcommand with spinup's terminal handed straight to
+// it: the child inherits stdin, stdout and stderr, rather than being copied
+// through spinup.
+//
+// That is the difference between `docker compose exec` opening a usable psql
+// and opening one that cannot read a password, size its window or run a pager:
+// what makes a terminal a terminal is the file descriptor, and a copy loop is
+// not one. Nothing about the output is spinup's to style here, so nothing is
+// captured either — compose's errors go straight to the user's stderr.
+func (r *Runner) Attach(ctx context.Context, p Project, args ...string) error {
+	full := p.Args(args...)
+
+	cmd := r.command(ctx, p.Dir, full)
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	if err := cmd.Run(); err != nil {
+		return composeError(full, "", err)
+	}
+	return nil
+}
+
 // capture runs docker and returns its stdout.
 func (r *Runner) capture(ctx context.Context, dir string, args []string) ([]byte, error) {
 	cmd := r.command(ctx, dir, args)

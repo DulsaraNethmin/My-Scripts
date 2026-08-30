@@ -27,7 +27,7 @@
 3.2m|Phase 3 — Distribution|manual|-|Create homebrew-tap + scoop-bucket repos, add TAP_GITHUB_TOKEN secret
 3.3|Phase 3 — Distribution|done|task/3.3-installers|install.sh, install.ps1, spinup update, completions
 3.4|Phase 3 — Distribution|manual|-|Tag and publish v1.1.0
-4.1|Phase 4 — CLI polish|todo|task/4.1-connect-cmds|Commands: shell, cli, open, url, info
+4.1|Phase 4 — CLI polish|wip|task/4.1-connect-cmds|Commands: shell, cli, open, url, info
 4.2|Phase 4 — CLI polish|todo|task/4.2-authoring-cmds|Commands: new, reset, completion
 4.3|Phase 4 — CLI polish|todo|task/4.3-output|--json, --port override, post-up summary card
 4.4|Phase 4 — CLI polish|todo|task/4.4-doctor-plus|doctor: port collisions, GPU runtime, compose version
