@@ -70,6 +70,12 @@ defaults, and GUIs on non-colliding `80xx` ports recorded in `docs/PORTS.md`.
   mistyped key is an error rather than being silently ignored, and every rule
   a stack must satisfy is reported in one pass. `internal/catalog` and
   `scripts/lint-stacks.sh` now enforce the same rules.
+- `spinup up`, `down`, `restart` and `destroy`. `up` materialises the stack,
+  seeds its env file, waits for healthy and prints the connection string and
+  GUI address; it is idempotent and never removes anything. `down` keeps data,
+  `destroy` is the only command that deletes it and asks first — a prompt it
+  cannot ask (no terminal) refuses rather than proceeding. Anything after `--`
+  goes straight to docker compose.
 - `internal/compose`: every invocation carries the same project name
   (`spinup-<stack>`), compose file and env file, so a stack can never collide
   with a project the user made themselves, and compose runs in the stack's own
