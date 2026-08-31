@@ -1,0 +1,15 @@
+name: monitoring
+description: Prometheus and Grafana, scraping the host and every container
+category: tooling
+primary: prometheus
+gui:
+  service: grafana
+  url: http://localhost:${GRAFANA_PORT}
+  login: ${GRAFANA_USER} / ${GRAFANA_PASSWORD}
+url: http://localhost:${PROMETHEUS_PORT}
+ports:
+  - name: PROMETHEUS_PORT
+    default: 9090
+  - name: GRAFANA_PORT
+    default: 8095
+profiles: [gui]

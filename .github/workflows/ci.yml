@@ -130,6 +130,11 @@ jobs:
           # and so goes behind the gui profile like the other separate GUIs.
           - { stack: traefik,             profiles: "" }
           - { stack: kafka,               profiles: "--profile gui" }
+          - { stack: keycloak,            profiles: "" }
+          - { stack: monitoring,          profiles: "--profile gui" }
+          # opensearch without its GUI: the two images together are about
+          # 3.5 GB, and the broker half is what can actually fail to start.
+          - { stack: opensearch,          profiles: "" }
     steps:
       - uses: actions/checkout@v4
 

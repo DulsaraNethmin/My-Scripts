@@ -1,0 +1,86 @@
+name: spinup-keycloak
+
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.7
+    restart: unless-stopped
+    # start-dev: HTTP without a certificate, no hostname strictness and no
+    # build step. `start` is the production command and needs both.
+    command: ["start-dev"]
+    environment:
+      # Creates the first admin, once, on an empty database. KEYCLOAK_ADMIN
+      # and KEYCLOAK_ADMIN_PASSWORD are the pre-26 spelling and are ignored.
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KEYCLOAK_ADMIN:-spinup}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-spinup}
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/${KEYCLOAK_DB:-keycloak}
+      KC_DB_USERNAME: ${KEYCLOAK_DB_USER:-keycloak}
+      KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:-keycloak}
+      # Puts /health/* on the management port, 9000, which is where the
+      # healthcheck below looks.
+      KC_HEALTH_ENABLED: "true"
+    ports:
+      - "${KEYCLOAK_PORT:-8096}:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      # The image has no curl and no wget — it is UBI micro with a JVM — so
+      # the probe is bash's own /dev/tcp. CMD-SHELL would run this under sh,
+      # which has no such thing, hence bash by name.
+      test:
+        - "CMD"
+        - "bash"
+        - "-c"
+        - "exec 3<>/dev/tcp/127.0.0.1/9000; printf 'GET /health/ready HTTP/1.1\r\nHost: 127.0.0.1\r\nConnection: close\r\n\r\n' >&3; grep -q '\"status\": \"UP\"' <&3"
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+  # The master realm ships with sslRequired=EXTERNAL, which rejects plain HTTP
+  # from anything Keycloak does not consider a private address — and behind
+  # Docker Desktop's port forwarding your own machine is one of those, so
+  # `curl http://localhost:8096/realms/master/...` answers 403 "HTTPS
+  # required" and the admin console cannot log in. This one-shot turns it off
+  # once the server is up. It is idempotent and runs on every start.
+  keycloak-setup:
+    image: quay.io/keycloak/keycloak:26.7
+    restart: "no"
+    environment:
+      ADMIN_USER: ${KEYCLOAK_ADMIN:-spinup}
+      ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-spinup}
+    entrypoint: ["bash", "-c"]
+    command:
+      - >-
+        /opt/keycloak/bin/kcadm.sh config credentials
+        --server http://keycloak:8080 --realm master
+        --user "$${ADMIN_USER}" --password "$${ADMIN_PASSWORD}"
+        && /opt/keycloak/bin/kcadm.sh update realms/master -s sslRequired=NONE
+    depends_on:
+      keycloak:
+        condition: service_healthy
+
+  postgres:
+    image: postgres:16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${KEYCLOAK_DB:-keycloak}
+      POSTGRES_USER: ${KEYCLOAK_DB_USER:-keycloak}
+      POSTGRES_PASSWORD: ${KEYCLOAK_DB_PASSWORD:-keycloak}
+    volumes:
+      - keycloak-db:/var/lib/postgresql/data
+    # Not published. This database belongs to Keycloak; the `postgres` stack is
+    # the one to reach for when you want a database of your own, and it already
+    # has 5432.
+    expose:
+      - "5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${KEYCLOAK_DB_USER:-keycloak} -d ${KEYCLOAK_DB:-keycloak}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+volumes:
+  keycloak-db:

@@ -277,6 +277,36 @@ has no UI to serve, so again none of the three declares a `gui` profile.
   broker up but unable to create a consumer group. kafka-ui is kafbat's fork;
   the `provectuslabs` image most search results point at has had no release
   since 2023.
+- `opensearch` — OpenSearch 3 with Dashboards behind the `gui` profile on
+  `8094`. The security plugin is off, so `9200` is plain HTTP with no
+  authentication: with it on, the port is HTTPS with a self-signed
+  certificate and every request needs `-k` and a password that satisfies a
+  complexity rule, which locally costs an afternoon and buys nothing. The
+  heap is pinned to 512 MB — left alone the JVM takes a quarter of the host's
+  RAM. The healthcheck deliberately does not require a green cluster: one node
+  holding any index is yellow, and correctly so.
+- `monitoring` — Prometheus and Grafana with node-exporter and cAdvisor, and a
+  provisioned data source and dashboard, so `--gui` opens on graphs rather
+  than a setup wizard. The exporters are not published; Prometheus scrapes
+  them over the stack network. Prometheus's image is distroless, so the
+  healthcheck is `promtool check healthy` rather than a curl. cAdvisor needs
+  the Docker socket named explicitly as well as `/var/run` — on Docker Desktop
+  that directory does not carry it — and even then cannot reach containerd
+  inside the VM, so on macOS and Windows its series have no `name` label. The
+  dashboard runs a second query keyed on the cgroup id in every container
+  panel, so it has data on every platform; only the legends differ.
+- `keycloak` — Keycloak 26 backed by its own unpublished Postgres, admin
+  console on `8096`. `start-dev`, because the production command needs a
+  certificate, a build step and a hostname. A one-shot sets the master realm's
+  `sslRequired` to `NONE`: it ships as `EXTERNAL`, which rejects plain HTTP
+  from anything Keycloak does not consider a private address — and behind
+  Docker Desktop's port forwarding your own machine is one of those, so
+  without it the admin console cannot log in while the identical request from
+  inside the container succeeds. The healthcheck is bash's `/dev/tcp` against
+  `/health/ready` on the management port; the image has neither curl nor wget,
+  and `sh` has no `/dev/tcp`.
+
+That completes the Phase 5 catalog: 25 stacks.
 
 ### Added — connect commands (Phase 4)
 
