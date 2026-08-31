@@ -9,6 +9,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `spin up` checks host ports before it starts anything, and says what holds
+  one. A collision used to surface as compose's own failure — a daemon error
+  about "programming external connectivity", printed twice, with the port
+  buried in it — and now reads:
+
+  ```
+  error: mailpit needs port 1025, which shipper-mailpit is using
+
+    start it elsewhere:  spin up mailpit --port MAILPIT_SMTP_PORT=1026
+    or change it for good:  spin env mailpit --edit
+  ```
+
+  The ports come from `docker compose config`, not from `spinup.yaml`, so only
+  ports the run would actually bind are checked: a GUI behind a profile nobody
+  selected is not one, and neither is a port `--port` has already moved. A
+  stack that is already running does not conflict with itself, so `up` stays
+  idempotent. Anything the check cannot decide is treated as free — a wrong
+  refusal stops a start that would have worked, while a missed conflict only
+  gives back the error you got before.
+
+  `docs/PLAN.md` has described this since the first draft; `internal/docker`
+  never had it. `spin doctor` still does not check ports.
+
 - The command is now `spin`, so `spin up mongodb` and `spin down mongodb` read
   as the phrases they are. `spinup` is installed beside it and runs the same
   program, so nothing breaks for anyone already on v1.1.0 — and it is a way out
