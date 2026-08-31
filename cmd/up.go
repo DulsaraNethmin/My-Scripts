@@ -1,8 +1,12 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"io"
+	"slices"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -18,6 +22,7 @@ func newUpCmd() *cobra.Command {
 		build   bool
 		pull    bool
 		noWait  bool
+		ports   []string
 		timeout time.Duration
 	)
 
@@ -50,9 +55,15 @@ func newUpCmd() *cobra.Command {
 					return err
 				}
 
+				overrides, err := portOverrides(p, ports)
+				if err != nil {
+					return err
+				}
+
 				heading(out, name)
 
 				runner := compose.New(out, cmd.ErrOrStderr())
+				runner.Env = overrides
 				err = runner.Up(ctx, p.project, compose.UpOptions{
 					Wait:    !noWait,
 					Timeout: timeout,
@@ -64,7 +75,7 @@ func newUpCmd() *cobra.Command {
 					return runCompose(err)
 				}
 
-				summarise(out, p)
+				summarise(ctx, out, p, runner)
 			}
 			return nil
 		},
@@ -75,8 +86,55 @@ func newUpCmd() *cobra.Command {
 	cmd.Flags().BoolVar(&pull, "pull", false, "pull newer images before starting")
 	cmd.Flags().BoolVar(&noWait, "no-wait", false, "do not wait for the stack to become healthy")
 	cmd.Flags().DurationVar(&timeout, "timeout", 3*time.Minute, "how long to wait for healthy")
+	cmd.Flags().StringArrayVar(&ports, "port", nil,
+		"override a host port for this run: --port POSTGRES_PORT=15432 (repeatable)")
 
 	return cmd
+}
+
+// portOverrides turns --port NAME=1234 into environment assignments for this
+// run, and applies them to the stack's resolved environment so the summary and
+// the connection string show the port compose is actually going to bind.
+//
+// Compose gives the process environment precedence over --env-file, which is
+// what makes a one-off override possible without editing anything. A name the
+// stack does not declare is refused rather than passed through: it would be
+// accepted silently by compose and the stack would come up on the port the
+// user was trying to change.
+func portOverrides(p *prepared, flags []string) ([]string, error) {
+	if len(flags) == 0 {
+		return nil, nil
+	}
+
+	valid := p.stack.PortNames()
+	env := make([]string, 0, len(flags))
+
+	for _, flag := range flags {
+		name, value, ok := strings.Cut(flag, "=")
+		if !ok || name == "" || value == "" {
+			return nil, failf(ExitUsage, "--port takes NAME=PORT, as in --port %s=15432", firstPortName(valid))
+		}
+		if !slices.Contains(valid, name) {
+			return nil, failf(ExitUsage, "%s has no port called %s — it has %s",
+				p.stack.Name, name, strings.Join(valid, ", "))
+		}
+
+		port, err := strconv.Atoi(value)
+		if err != nil || port < 1 || port > 65535 {
+			return nil, failf(ExitUsage, "%s=%s is not a port number", name, value)
+		}
+
+		p.env[name] = value
+		env = append(env, name+"="+value)
+	}
+	return env, nil
+}
+
+func firstPortName(names []string) string {
+	if len(names) == 0 {
+		return "SERVICE_PORT"
+	}
+	return names[0]
 }
 
 // catalogExpand resolves the ${VAR} references a spinup.yaml value is written
@@ -85,10 +143,25 @@ func catalogExpand(value string, p *prepared) string {
 	return catalog.Expand(value, p.env)
 }
 
-// summarise prints what the user came for: where the thing they just started
-// is, and how to connect to it. The fuller card is task 4.3.
-func summarise(out io.Writer, p *prepared) {
+// summarise prints what the user came for: what came up, where it is listening,
+// and how to connect to it — the information people otherwise go digging
+// through a compose file and a password manager for.
+//
+// The services line comes from compose rather than from the stack's metadata,
+// so it reports what is actually running: a stack started without its GUI does
+// not advertise one, and a port that had to be overridden shows the port that
+// was bound.
+func summarise(ctx context.Context, out io.Writer, p *prepared, runner *compose.Runner) {
 	s := p.stack
+
+	// A failure here is not worth failing an otherwise good `up` for: it only
+	// costs the services line, and the GUI is then reported from the stack's
+	// metadata as it was before compose could be asked.
+	containers, psErr := runner.PS(ctx, p.project)
+
+	if services := runningServices(containers); services != "" {
+		fmt.Fprintf(out, "  %-9s %s\n", ui.Dim("services"), services)
+	}
 
 	url := catalogExpand(s.URL, p)
 	if url != "" {
@@ -96,8 +169,9 @@ func summarise(out io.Writer, p *prepared) {
 	}
 
 	// For a stack whose GUI is its primary service the two are the same
-	// address, and repeating it back adds nothing.
-	if s.HasGUI() {
+	// address, and repeating it back adds nothing. Nor is a GUI advertised
+	// when it was not started — `up --no-gui` leaves nothing on that port.
+	if s.HasGUI() && (psErr != nil || serviceIsRunning(containers, s.GUI.Service)) {
 		if gui := catalogExpand(s.GUI.URL, p); gui != "" && gui != url {
 			line := gui
 			if login := catalogExpand(s.GUI.Login, p); login != "" && login != "none" {
@@ -107,4 +181,45 @@ func summarise(out io.Writer, p *prepared) {
 		}
 	}
 	fmt.Fprintf(out, "  %-9s %s\n", ui.Dim("env"), p.paths.EnvFile(s.Name))
+}
+
+// runningServices is "postgres 5432, pgadmin 8080" — each service that came up,
+// with the host port it bound. Asking compose costs one more call than reading
+// the stack's metadata, and buys the difference between what was asked for and
+// what is true.
+func runningServices(containers []compose.Container) string {
+	var services []string
+	for _, c := range containers {
+		if !c.Running() {
+			continue
+		}
+
+		seen := map[int]bool{}
+		var ports []string
+		for _, pub := range c.Publishers {
+			if pub.PublishedPort == 0 || seen[pub.PublishedPort] {
+				continue
+			}
+			seen[pub.PublishedPort] = true
+			ports = append(ports, strconv.Itoa(pub.PublishedPort))
+		}
+
+		if len(ports) == 0 {
+			services = append(services, c.Service)
+			continue
+		}
+		services = append(services, c.Service+" "+strings.Join(ports, "/"))
+	}
+	return strings.Join(services, ", ")
+}
+
+// serviceIsRunning reports whether one of a stack's services has a running
+// container.
+func serviceIsRunning(containers []compose.Container, service string) bool {
+	for _, c := range containers {
+		if c.Service == service && c.Running() {
+			return true
+		}
+	}
+	return false
 }

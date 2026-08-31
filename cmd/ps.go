@@ -12,6 +12,8 @@ import (
 )
 
 func newPSCmd() *cobra.Command {
+	var asJSON bool
+
 	cmd := &cobra.Command{
 		Use:   "ps [stack]",
 		Short: "Show the containers of running stacks",
@@ -45,6 +47,11 @@ func newPSCmd() *cobra.Command {
 			}
 
 			if len(names) == 0 {
+				if asJSON {
+					// An empty array, not prose: a script that asks what is
+					// running has to be able to read the answer "nothing".
+					return writeJSON(out, []containerJSON{})
+				}
 				fmt.Fprintln(out, ui.Dim("no spinup stacks are running — try `spinup up postgres`"))
 				return nil
 			}
@@ -55,6 +62,8 @@ func newPSCmd() *cobra.Command {
 			}
 
 			table := ui.NewTable("stack", "service", "status", "health", "ports")
+			rows := []containerJSON{}
+
 			for _, name := range names {
 				project := compose.Project{
 					Stack:   name,
@@ -67,8 +76,16 @@ func newPSCmd() *cobra.Command {
 					return runCompose(err)
 				}
 				for _, c := range containers {
+					if asJSON {
+						rows = append(rows, containerToJSON(name, c))
+						continue
+					}
 					table.Row(name, c.Service, statusCellFor(c), healthCell(c), portsCell(c))
 				}
+			}
+
+			if asJSON {
+				return writeJSON(out, rows)
 			}
 
 			if table.Rows() == 0 {
@@ -81,7 +98,62 @@ func newPSCmd() *cobra.Command {
 		},
 	}
 
+	cmd.Flags().BoolVar(&asJSON, "json", false, "print the containers as JSON")
+
 	return cmd
+}
+
+// containerJSON is `spinup ps --json`: compose's own view of a container,
+// named the way spinup names things, with the published ports flattened into
+// something a script can index.
+type containerJSON struct {
+	Stack     string     `json:"stack"`
+	Service   string     `json:"service"`
+	Container string     `json:"container"`
+	Image     string     `json:"image"`
+	State     string     `json:"state"`
+	Status    string     `json:"status"`
+	Health    string     `json:"health,omitempty"`
+	Running   bool       `json:"running"`
+	Healthy   bool       `json:"healthy"`
+	Ports     []portJSON `json:"ports"`
+}
+
+type portJSON struct {
+	Published int    `json:"published"`
+	Target    int    `json:"target"`
+	Protocol  string `json:"protocol,omitempty"`
+}
+
+func containerToJSON(stack string, c compose.Container) containerJSON {
+	row := containerJSON{
+		Stack:     stack,
+		Service:   c.Service,
+		Container: c.Name,
+		Image:     c.Image,
+		State:     c.State,
+		Status:    c.Status,
+		Health:    c.Health,
+		Running:   c.Running(),
+		Healthy:   c.Healthy(),
+		Ports:     []portJSON{},
+	}
+
+	// compose reports one publisher per address family, so a port bound on
+	// both IPv4 and IPv6 arrives twice.
+	seen := map[int]bool{}
+	for _, p := range c.Publishers {
+		if p.PublishedPort == 0 || seen[p.PublishedPort] {
+			continue
+		}
+		seen[p.PublishedPort] = true
+		row.Ports = append(row.Ports, portJSON{
+			Published: p.PublishedPort,
+			Target:    p.TargetPort,
+			Protocol:  p.Protocol,
+		})
+	}
+	return row
 }
 
 func healthCell(c compose.Container) string {

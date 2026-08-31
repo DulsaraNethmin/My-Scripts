@@ -187,6 +187,20 @@ defaults, and GUIs on non-colliding `80xx` ports recorded in `docs/PORTS.md`.
   browser with the login beside it (`--print` for a headless machine).
   `spinup info <stack>` is the stack's page: what it is, its ports,
   credentials and addresses, then its README.
+- `spinup up --port NAME=1234` moves a host port for one run without editing
+  anything, for the common case of a port already being taken. Compose gives
+  the process environment precedence over `--env-file`, which is what makes it
+  possible; a name the stack does not declare is refused rather than passed
+  through, because compose would accept it silently and bind the port the user
+  was trying to change.
+- The summary after `up` now names what actually came up — "services  postgres
+  5432, pgadmin 8080" — read back from compose rather than from the stack's
+  metadata, so an overridden port shows the port that was bound and
+  `up --no-gui` no longer advertises a GUI that is not running.
+- `--json` on `list` and `ps`, for scripts. `list --json` carries the resolved
+  ports and connection string rather than the defaults; `ps --json` carries
+  compose's own view with the duplicate IPv4/IPv6 publishers collapsed, and
+  answers `[]` rather than prose when nothing is running.
 - `spinup new <name>` scaffolds a stack of your own into
   `~/.spinup/stacks/<name>/` — and what it writes runs as it stands: an nginx
   that comes up healthy on the first `spinup up`, carrying every convention a

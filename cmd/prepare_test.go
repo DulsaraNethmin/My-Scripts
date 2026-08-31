@@ -6,6 +6,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"strings"
 	"testing"
@@ -175,9 +176,11 @@ func TestSummarise(t *testing.T) {
 	}
 
 	var out bytes.Buffer
-	summarise(&out, p)
+	summarise(ctx, &out, p, fakePS(t, `{"Service":"postgres","State":"running","Publishers":[{"PublishedPort":5432,"TargetPort":5432},{"PublishedPort":5432,"TargetPort":5432}]}
+{"Service":"pgadmin","State":"running","Publishers":[{"PublishedPort":8080,"TargetPort":80}]}`))
 
 	for _, want := range []string{
+		"postgres 5432, pgadmin 8080",             // what actually came up, from compose
 		"postgres://spinup@localhost:5432/spinup", // ${VAR} resolved from the env
 		"http://localhost:8080",
 		"admin@example.com / spinup",
@@ -186,6 +189,76 @@ func TestSummarise(t *testing.T) {
 			t.Errorf("summary is missing %q:\n%s", want, out.String())
 		}
 	}
+}
+
+// A GUI that was not started is not advertised: `up --no-gui` leaves nothing
+// on that port, and printing the address anyway sends the user to a refused
+// connection.
+func TestSummariseWithoutTheGUI(t *testing.T) {
+	ui.SetColor(false)
+	t.Cleanup(func() { ui.SetColor(true) })
+
+	ctx, _ := prepareCtx(t)
+	p, err := prepare(ctx, "postgres", profileFlags{noGUI: true})
+	if err != nil {
+		t.Fatalf("prepare: %v", err)
+	}
+
+	var out bytes.Buffer
+	summarise(ctx, &out, p,
+		fakePS(t, `{"Service":"postgres","State":"running","Publishers":[{"PublishedPort":5432,"TargetPort":5432}]}`))
+
+	if strings.Contains(out.String(), "8080") {
+		t.Errorf("the summary advertises a GUI that is not running:\n%s", out.String())
+	}
+	if !strings.Contains(out.String(), "postgres://") {
+		t.Errorf("the summary lost the connection string:\n%s", out.String())
+	}
+}
+
+// When compose cannot be asked at all — no daemon, say — the summary falls
+// back to the stack's metadata rather than going quiet.
+func TestSummariseWithoutCompose(t *testing.T) {
+	ui.SetColor(false)
+	t.Cleanup(func() { ui.SetColor(true) })
+
+	ctx, _ := prepareCtx(t)
+	p, err := prepare(ctx, "postgres", profileFlags{})
+	if err != nil {
+		t.Fatalf("prepare: %v", err)
+	}
+
+	runner := compose.New(nil, nil)
+	runner.Bin = filepath.Join(t.TempDir(), "no-such-docker")
+
+	var out bytes.Buffer
+	summarise(ctx, &out, p, runner)
+
+	for _, want := range []string{"postgres://spinup@localhost:5432/spinup", "http://localhost:8080"} {
+		if !strings.Contains(out.String(), want) {
+			t.Errorf("summary is missing %q:\n%s", want, out.String())
+		}
+	}
+}
+
+// fakePS is a runner whose docker prints the given `compose ps --format json`
+// output, so the summary can be tested without a daemon.
+func fakePS(t *testing.T, output string) *compose.Runner {
+	t.Helper()
+
+	if runtime.GOOS == "windows" {
+		t.Skip("the fake docker is a shell script")
+	}
+
+	bin := filepath.Join(t.TempDir(), "fake-docker")
+	script := "#!/bin/sh\ncat <<'EOF'\n" + output + "\nEOF\n"
+	if err := os.WriteFile(bin, []byte(script), 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	runner := compose.New(nil, nil)
+	runner.Bin = bin
+	return runner
 }
 
 // A compose failure is exit 4, so a script can tell it from a stack that does
