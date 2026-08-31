@@ -35,7 +35,7 @@
 5.2|Phase 5 — Catalog v2|done|task/5.2-stacks-b|stacks: rabbitmq, nats, mariadb
 5.3|Phase 5 — Catalog v2|done|task/5.3-stacks-c|stacks: portainer, couchdb, neo4j
 5.4|Phase 5 — Catalog v2|done|task/5.4-stacks-d|stacks: clickhouse, localstack, vault
-5.5|Phase 5 — Catalog v2|wip|task/5.5-stacks-e|stacks: traefik, kafka (KRaft + kafka-ui)
+5.5|Phase 5 — Catalog v2|done|task/5.5-stacks-e|stacks: traefik, kafka (KRaft + kafka-ui)
 5.6|Phase 5 — Catalog v2|todo|task/5.6-stacks-f|stacks: opensearch, monitoring, keycloak
 6.1|Phase 6 — Docs|todo|task/6.1-readme|README: install one-liner, demo GIF, stack table, FAQ
 6.2|Phase 6 — Docs|todo|task/6.2-contributing|CONTRIBUTING.md, issue templates
