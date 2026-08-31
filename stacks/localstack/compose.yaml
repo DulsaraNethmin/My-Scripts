@@ -1,0 +1,33 @@
+name: spinup-localstack
+
+services:
+  localstack:
+    # 4 is the last freely usable line: the CalVer tags (latest, stable,
+    # 2026.x) are the Pro image and quit with exit 55 unless
+    # LOCALSTACK_AUTH_TOKEN holds a valid licence.
+    image: localstack/localstack:4
+    restart: unless-stopped
+    environment:
+      DEBUG: ${LOCALSTACK_DEBUG:-0}
+      # Lambda runs each function in a container of its own, which LocalStack
+      # starts through this socket. Without it Lambda is the one service that
+      # does not work.
+      DOCKER_HOST: unix:///var/run/docker.sock
+    ports:
+      # One gateway port in front of every service — the endpoint URL an SDK
+      # is pointed at.
+      - "${LOCALSTACK_PORT:-4566}:4566"
+    volumes:
+      - localstack-data:/var/lib/localstack
+      - ${LOCALSTACK_DOCKER_SOCK:-/var/run/docker.sock}:/var/run/docker.sock
+    healthcheck:
+      # LocalStack's own endpoint, and the probe its documentation uses. The
+      # image is Debian-based and ships curl, not wget.
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:4566/_localstack/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+volumes:
+  localstack-data:

@@ -232,6 +232,32 @@ Portainer, Fauxton and Neo4j Browser are all served by their stack's primary
 container, so none of the three has a `gui` profile. All three are in the CI
 smoke matrix.
 
+- `clickhouse` — ClickHouse 26.3 LTS with Play, its built-in query UI, at
+  `/play` on the HTTP port. Native protocol on `9001` rather than its usual
+  `9000`, which the minio stack has. Setting `CLICKHOUSE_USER` *replaces* the
+  `default` account rather than adding to it — the image writes a `users.d`
+  that removes it — so nothing passwordless is left listening on a published
+  port. Seed files in `init/` run against `default`, not against
+  `CLICKHOUSE_DB`, so the README's example starts with `USE`.
+- `localstack` — AWS on your machine: S3, SQS, SNS, Lambda, DynamoDB and the
+  rest behind one gateway port, `4566`. Pinned to `4`, the last freely usable
+  line: LocalStack's CalVer tags (`latest`, `stable`, `2026.x`) are the Pro
+  image and quit with exit 55 unless `LOCALSTACK_AUTH_TOKEN` holds a valid
+  licence. The Docker socket is mounted because LocalStack runs each Lambda
+  invocation in a container of its own — verified by deploying and invoking
+  one. No web interface: LocalStack's is a hosted service, so the stack
+  declares no GUI and `/_localstack/health` is the local equivalent.
+- `vault` — HashiCorp Vault in dev mode, with the built-in UI at `/ui` on
+  `8200`. Dev mode is what makes it a one-command service: a real Vault starts
+  sealed and would need initialising and unsealing by hand on every start. The
+  cost is that nothing is persisted, so the stack declares no volumes at all.
+  `VAULT_TOKEN` sets the root token and is also exported inside the container
+  alongside `VAULT_ADDR`, so `spinup cli vault -- kv put secret/x y=z` is
+  already pointed at the server and authenticated.
+
+Play and Vault's UI are served by their primary container too, and localstack
+has no UI to serve, so again none of the three declares a `gui` profile.
+
 ### Added — connect commands (Phase 4)
 
 - `spinup shell <stack> [service]` opens a shell in a running container —

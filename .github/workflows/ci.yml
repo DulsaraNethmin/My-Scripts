@@ -121,6 +121,11 @@ jobs:
           - { stack: couchdb,             profiles: "" }
           - { stack: neo4j,               profiles: "" }
           - { stack: portainer,           profiles: "" }
+          # ClickHouse's Play and Vault's UI are likewise served by the primary
+          # container; localstack has no web interface to serve at all.
+          - { stack: clickhouse,          profiles: "" }
+          - { stack: localstack,          profiles: "" }
+          - { stack: vault,               profiles: "" }
     steps:
       - uses: actions/checkout@v4
 

@@ -1,0 +1,40 @@
+name: spinup-clickhouse
+
+services:
+  clickhouse:
+    image: clickhouse:26.3
+    restart: unless-stopped
+    environment:
+      CLICKHOUSE_USER: ${CLICKHOUSE_USER:-spinup}
+      CLICKHOUSE_PASSWORD: ${CLICKHOUSE_PASSWORD:-spinup}
+      CLICKHOUSE_DB: ${CLICKHOUSE_DB:-spinup}
+    ulimits:
+      # ClickHouse opens a file per column per part and logs a warning it means
+      # on the default 1024. This is the number its own packaging sets.
+      nofile:
+        soft: 262144
+        hard: 262144
+    ports:
+      # Play, the built-in query UI, is served by ClickHouse itself at /play on
+      # the HTTP port.
+      - "${CLICKHOUSE_HTTP_PORT:-8123}:8123"
+      # 9001 on the host: the native protocol wants 9000 and the minio stack
+      # has it, and every stack has to be able to run beside every other.
+      - "${CLICKHOUSE_NATIVE_PORT:-9001}:9000"
+    volumes:
+      - clickhouse-data:/var/lib/clickhouse
+      - clickhouse-logs:/var/log/clickhouse-server
+      # Any .sql or .sh dropped in init/ runs once, on an empty data volume.
+      - ./init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      # /ping is ClickHouse's own liveness endpoint and needs no credentials.
+      # The image is Ubuntu-based: it has wget and no curl.
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8123/ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+volumes:
+  clickhouse-data:
+  clickhouse-logs:
