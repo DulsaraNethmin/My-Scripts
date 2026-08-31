@@ -1,0 +1,29 @@
+name: spinup-vault
+
+services:
+  vault:
+    image: hashicorp/vault:2.0
+    restart: unless-stopped
+    environment:
+      # The image starts `vault server -dev` when this is set: initialised,
+      # unsealed and in memory, which is the only shape that survives being
+      # started by one command. See the README — nothing here is persisted.
+      VAULT_DEV_ROOT_TOKEN_ID: ${VAULT_TOKEN:-spinup-root-token}
+      VAULT_DEV_LISTEN_ADDRESS: 0.0.0.0:8200
+      # So the `vault` CLI inside the container is already pointed at the
+      # server and authenticated: `spinup cli vault -- kv list secret/`.
+      VAULT_ADDR: http://127.0.0.1:8200
+      VAULT_TOKEN: ${VAULT_TOKEN:-spinup-root-token}
+    ports:
+      # The API and the built-in UI (at /ui) are the same port.
+      - "${VAULT_PORT:-8200}:8200"
+    # No IPC_LOCK: dev mode disables mlock, which is the only thing that
+    # capability is for.
+    healthcheck:
+      # 200 from sys/health means initialised, unsealed and active — all three
+      # of the things that can be wrong with a Vault.
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8200/v1/sys/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 5s

@@ -1,0 +1,9 @@
+name: localstack
+description: LocalStack 4 — AWS services (S3, SQS, Lambda, DynamoDB) on your machine
+category: tooling
+primary: localstack
+cli: awslocal
+url: http://localhost:${LOCALSTACK_PORT}
+ports:
+  - name: LOCALSTACK_PORT
+    default: 4566

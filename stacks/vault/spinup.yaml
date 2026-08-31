@@ -1,0 +1,13 @@
+name: vault
+description: HashiCorp Vault in dev mode, with the built-in UI
+category: tooling
+primary: vault
+cli: vault
+gui:
+  service: vault
+  url: http://localhost:${VAULT_PORT}/ui
+  login: token ${VAULT_TOKEN}
+url: http://localhost:${VAULT_PORT}
+ports:
+  - name: VAULT_PORT
+    default: 8200

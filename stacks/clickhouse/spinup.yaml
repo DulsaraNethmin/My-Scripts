@@ -1,0 +1,15 @@
+name: clickhouse
+description: ClickHouse 26.3 LTS with the built-in Play query UI
+category: database
+primary: clickhouse
+cli: clickhouse-client --user ${CLICKHOUSE_USER} --password ${CLICKHOUSE_PASSWORD} --database ${CLICKHOUSE_DB}
+gui:
+  service: clickhouse
+  url: http://localhost:${CLICKHOUSE_HTTP_PORT}/play
+  login: ${CLICKHOUSE_USER} / ${CLICKHOUSE_PASSWORD}
+url: http://${CLICKHOUSE_USER}:${CLICKHOUSE_PASSWORD}@localhost:${CLICKHOUSE_HTTP_PORT}
+ports:
+  - name: CLICKHOUSE_HTTP_PORT
+    default: 8123
+  - name: CLICKHOUSE_NATIVE_PORT
+    default: 9001
