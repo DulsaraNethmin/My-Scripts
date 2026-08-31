@@ -324,6 +324,18 @@ That completes the Phase 5 catalog: 25 stacks.
   a performance. `SPINUP_DEMO_PORTS` rehearses it on a machine where 5432 or
   8080 is busy. The GIF itself is not in the repository yet; the README has a
   comment where it goes.
+- `CONTRIBUTING.md`, written around adding a stack, because that is the
+  contribution the design is shaped for. It carries the things that cost time
+  to learn rather than the things a template would tell you: probe `127.0.0.1`
+  and not `localhost`; check the image actually has the tool your healthcheck
+  uses; a GUI served by the primary service declares no `gui` profile, which
+  is fourteen of the twenty-five stacks against eight that do; the one-shot
+  setup pattern for services that will not finish configuring themselves; and
+  `make build` after every change under `stacks/`, because the catalog is
+  compiled into the binary.
+- Issue templates for a bug report and a stack request, a PR template whose
+  checklist is the stack acceptance criteria, and links from the issue chooser
+  to the design and the port registry.
 
 ### Added — connect commands (Phase 4)
 

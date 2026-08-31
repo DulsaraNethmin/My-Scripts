@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: How a stack works
+    url: https://github.com/DulsaraNethmin/spinup/blob/main/docs/PLAN.md
+    about: The design — architecture, the spinup.yaml schema and the Compose conventions.
+  - name: Port registry
+    url: https://github.com/DulsaraNethmin/spinup/blob/main/docs/PORTS.md
+    about: Which stack owns which port, and why some of them moved.

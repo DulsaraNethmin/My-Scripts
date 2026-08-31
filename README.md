@@ -266,12 +266,15 @@ Docker Desktop with the WSL 2 backend. Scoop or `install.ps1` for the binary.
 Where a stack mounts the Docker socket, set its `*_DOCKER_SOCK` variable to
 `//./pipe/docker_engine`.
 
-## Contributing a stack
+## Contributing
 
-A stack is four files — `compose.yaml`, `.env.example`, `spinup.yaml` and
-`README.md` — and needs no Go code. `stacks/postgres/` is the reference to copy.
-`docs/PLAN.md` §4 has the conventions; claim your ports in `docs/PORTS.md`
-first.
+The most useful contribution is a stack: four files —
+`compose.yaml`, `.env.example`, `spinup.yaml` and `README.md` — and no Go code.
+`stacks/postgres/` is the reference to copy.
+
+[**CONTRIBUTING.md**](CONTRIBUTING.md) has the whole of it: claiming ports, the
+three healthcheck mistakes everyone makes, when a GUI belongs behind the `gui`
+profile and when it does not, and what a stack has to do before it is done.
 
 ```
 make stacks-lint       # the structural rules
