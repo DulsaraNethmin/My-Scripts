@@ -129,8 +129,15 @@ homebrew_casks:
     # The binaries are not notarized, so without this macOS quarantines the
     # download and Gatekeeper refuses to run it — the user sees "cannot be
     # opened because the developer cannot be verified" on their first spinup.
+    #
+    # This has to be `pre`, not `post`. Homebrew sorts cask artifacts
+    # (Cask::Artifact::AbstractArtifact.sort_order) as PreflightSteps ... Binary
+    # ... GeneratedCompletion, PostflightSteps — so generate_completions_from_
+    # executable below runs the binary *before* a postflight hook could
+    # unquarantine it. Gatekeeper then blocks that exec during `brew install`
+    # itself, and the quarantine strip never happens.
     hooks:
-      post:
+      pre:
         install: |
           if system_command("/usr/bin/xattr", args: ["-h"]).exit_status == 0
             system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/spinup"]
