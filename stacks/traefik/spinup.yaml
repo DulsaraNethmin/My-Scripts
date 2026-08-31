@@ -1,0 +1,14 @@
+name: traefik
+description: Traefik v3 — reverse proxy that routes to containers by label
+category: web
+primary: traefik
+gui:
+  service: traefik
+  url: http://localhost:${TRAEFIK_DASHBOARD_PORT}
+  login: none
+url: http://localhost:${TRAEFIK_HTTP_PORT}
+ports:
+  - name: TRAEFIK_HTTP_PORT
+    default: 8098
+  - name: TRAEFIK_DASHBOARD_PORT
+    default: 8092
