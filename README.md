@@ -7,7 +7,7 @@ one command, on macOS, Linux and Windows, using Docker Compose underneath.
 spin up postgres        # Postgres 16 + pgAdmin, running in ~10s
 ```
 
-No cloning, no editing YAML, no remembering ports and passwords. **25 stacks**,
+No cloning, no editing YAML, no remembering ports and passwords. **29 stacks**,
 each pinned to a real version, healthchecked, and able to run beside every
 other one.
 
@@ -117,7 +117,7 @@ Several stacks at once work everywhere a stack is taken:
 ## The catalog
 
 Every stack keeps its service on its well-known port and puts any web GUI in
-the `80xx` range, so all 25 can run at the same time. A `gui` in the last
+the `80xx` range, so all 29 can run at the same time. A `gui` in the last
 column means the web interface is a container of its own and starts only with
 `--gui`; otherwise it is the service itself and is always there.
 
@@ -135,6 +135,10 @@ column means the web interface is a container of its own and starts only with
 | `neo4j` | Neo4j 5 Community with Neo4j Browser | 7687, 8091 | — |
 | `clickhouse` | ClickHouse 26.3 LTS with the Play query UI | 8123, 9001 | — |
 | `opensearch` | OpenSearch 3 with OpenSearch Dashboards | 9200, 8094 | `gui` |
+| `qdrant` | Qdrant 1.19 with its built-in web dashboard | 6333, 6334 | — |
+| `chroma` | Chroma 1.5, HTTP API only | 8000 | — |
+| `pgvector` | PostgreSQL 17 with the pgvector extension | 5433 | — |
+| `weaviate` | Weaviate 1.39 with REST and gRPC | 9080, 50051 | — |
 
 ### Messaging
 
