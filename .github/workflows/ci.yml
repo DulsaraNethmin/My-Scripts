@@ -135,11 +135,14 @@ jobs:
           # opensearch without its GUI: the two images together are about
           # 3.5 GB, and the broker half is what can actually fail to start.
           - { stack: opensearch,          profiles: "" }
-          # The vector stores. All are small and start in seconds. None has
-          # a gui profile to select: qdrant serves its dashboard from the
-          # primary container and chroma has no web interface at all.
+          # The vector stores. All four are small (70-170 MB) and start in
+          # seconds. None has a gui profile to select: qdrant serves its
+          # dashboard from the primary container, and chroma, pgvector and
+          # weaviate have no web interface at all.
           - { stack: qdrant,              profiles: "" }
           - { stack: chroma,              profiles: "" }
+          - { stack: pgvector,            profiles: "" }
+          - { stack: weaviate,            profiles: "" }
     steps:
       - uses: actions/checkout@v4
 

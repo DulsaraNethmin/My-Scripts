@@ -1,0 +1,9 @@
+name: pgvector
+description: PostgreSQL 17 with the pgvector extension for embeddings
+category: database
+primary: pgvector
+cli: psql -U ${PGVECTOR_USER} ${PGVECTOR_DB}
+url: postgres://${PGVECTOR_USER}:${PGVECTOR_PASSWORD}@localhost:${PGVECTOR_PORT}/${PGVECTOR_DB}
+ports:
+  - name: PGVECTOR_PORT
+    default: 5433
