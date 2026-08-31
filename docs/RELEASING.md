@@ -45,6 +45,13 @@ their cosign signature, the cask and the Scoop manifest — then checks them and
 uploads the archives as a workflow artefact. Nothing reaches the Releases page
 and nothing is pushed to the tap.
 
+What the dry run cannot prove is the publishing path: by definition it takes the
+snapshot branch of the workflow, so a mistake in the tag/snapshot conditional
+only shows on a real tag — as one did, when `${{ cond && '' || '--snapshot' }}`
+turned out to append `--snapshot` on both branches, because an empty string is
+falsy in a GitHub Actions expression. The release job now asserts that a tag
+published its assets, so that failure cannot be green again.
+
 Locally, `make snapshot` does the same build into `dist/` (without signing —
 that needs an OIDC token only Actions has), and `make release-check` validates
 `.goreleaser.yaml`. CI runs `goreleaser check` on every push.
