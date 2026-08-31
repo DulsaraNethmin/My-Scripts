@@ -192,11 +192,13 @@ homebrew_casks:
       trash:
         - ~/.spinup
     caveats: |
-      spinup drives Docker, so Docker with Compose v2 has to be running:
+      spin drives Docker, so Docker with Compose v2 has to be running:
 
-        spinup doctor     check the setup
-        spinup list       the stack catalog
-        spinup up postgres
+        spin doctor       check the setup
+        spin list         the stack catalog
+        spin up postgres
+
+      Installed as `spin` and as `spinup`; the two are the same program.
 
 # Windows.
 scoops:
