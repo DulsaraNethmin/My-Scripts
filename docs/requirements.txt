@@ -1,0 +1,5 @@
+# Pinned so a docs build is reproducible, and because Material for MkDocs
+# warns that MkDocs 2.0 will remove the plugin system with no migration path.
+# Bump deliberately, and rebuild with `make docs` before you do.
+mkdocs==1.6.1
+mkdocs-material==9.7.7

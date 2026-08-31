@@ -1,6 +1,7 @@
 # ---- build artefacts ----
 bin/
 dist/
+build/
 *.exe
 *.dll
 *.so

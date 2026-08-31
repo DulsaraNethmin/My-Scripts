@@ -1,0 +1,80 @@
+# Builds the documentation site and publishes it to GitHub Pages.
+#
+# One-time setup by hand: Settings -> Pages -> Source: GitHub Actions. Until
+# that is done the deploy step fails and the build step still runs, so a broken
+# link is caught on a pull request either way.
+name: docs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "README.md"
+      - "CONTRIBUTING.md"
+      - "CHANGELOG.md"
+      - "docs/**"
+      - "stacks/*/README.md"
+      - "stacks/*/spinup.yaml"
+      - "mkdocs.yml"
+      - "scripts/build-docs.sh"
+      - ".github/workflows/docs.yml"
+  pull_request:
+    paths:
+      - "README.md"
+      - "CONTRIBUTING.md"
+      - "CHANGELOG.md"
+      - "docs/**"
+      - "stacks/*/README.md"
+      - "stacks/*/spinup.yaml"
+      - "mkdocs.yml"
+      - "scripts/build-docs.sh"
+      - ".github/workflows/docs.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: docs/requirements.txt
+
+      - run: pip install -r docs/requirements.txt
+
+      # --strict turns a link the assembler did not rewrite into a failure
+      # rather than a warning nobody reads.
+      - name: build
+        run: |
+          ./scripts/build-docs.sh
+          mkdocs build --strict
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/site
+
+  deploy:
+    # Only from main: a pull request gets the build for its link check and
+    # publishes nothing.
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@v4
