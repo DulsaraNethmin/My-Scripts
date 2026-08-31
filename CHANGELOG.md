@@ -416,4 +416,4 @@ That completes the Phase 5 catalog: 25 stacks.
   start it with `spinup up redis`" — rather than passing compose's own
   "service is not running" through.
 
-[unreleased]: https://github.com/DulsaraNethmin/My-Scripts/commits/main
+[unreleased]: https://github.com/DulsaraNethmin/spinup/commits/main

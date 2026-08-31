@@ -14,14 +14,11 @@ other one.
 > **Status: in development.** The catalog and the CLI are complete; the first
 > release is not tagged yet, so the install commands below start working once
 > it is. Until then, [build it from source](#from-source) or use the stacks
-> directly with `docker compose` — both work, and both will keep working. This
-> repository is the successor to `My-Scripts` and is still named that on
-> GitHub, so the URLs below will not resolve until it is renamed.
+> directly with `docker compose` — both work, and both will keep working.
 >
 > Progress: `make status`. Design: [`docs/PLAN.md`](docs/PLAN.md). The same
 > docs are a site — `make docs-serve` locally, and at
-> <https://dulsaranethmin.github.io/spinup/> once the repository is renamed and
-> Pages is switched on.
+> <https://dulsaranethmin.github.io/spinup/> once Pages is switched on.
 
 ## What it looks like
 
@@ -91,7 +88,7 @@ binary, in which case it says so and prints the right command instead.
 Go 1.25 and Docker with Compose v2:
 
 ```
-git clone https://github.com/DulsaraNethmin/My-Scripts.git spinup && cd spinup
+git clone https://github.com/DulsaraNethmin/spinup.git && cd spinup
 make build                # -> bin/spinup
 ./bin/spinup doctor       # check docker, compose and spinup's own setup
 ```

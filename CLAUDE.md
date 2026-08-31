@@ -13,9 +13,9 @@ brew install DulsaraNethmin/tap/spinup
 spinup up postgres      # → Postgres 16 + pgAdmin, running in ~10s
 ```
 
-The repo is currently `DulsaraNethmin/My-Scripts` — a collection of ad-hoc Compose
-files and shell scripts — and is being grown **in place** into `spinup`. The old
-Compose files are the seed of the stack catalog; the shell/`.bat`/`.desktop` scripts
+The repo is `DulsaraNethmin/spinup`, grown **in place** out of `My-Scripts` — a
+collection of ad-hoc Compose files and shell scripts. The old Compose files are the
+seed of the stack catalog; the shell/`.bat`/`.desktop` scripts
 are all superseded by the CLI and get deleted.
 
 **Read `docs/PLAN.md` for the full design.** It is the specification: architecture,

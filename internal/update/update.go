@@ -26,8 +26,7 @@ import (
 )
 
 // DefaultRepo is where spinup's releases live. SPINUP_REPO overrides it, which
-// is what makes the CLI usable against a fork — or against this repository
-// before it is renamed away from My-Scripts.
+// is what makes the CLI usable against a fork.
 const DefaultRepo = "DulsaraNethmin/spinup"
 
 // defaultAPI is GitHub's API. SPINUP_API overrides it; the tests point it at a
