@@ -1,0 +1,12 @@
+name: portainer
+description: Portainer CE — a web UI for the local Docker daemon
+category: tooling
+primary: portainer
+gui:
+  service: portainer
+  url: http://localhost:${PORTAINER_PORT}
+  login: admin / ${PORTAINER_ADMIN_PASSWORD}
+url: http://localhost:${PORTAINER_PORT}
+ports:
+  - name: PORTAINER_PORT
+    default: 8089

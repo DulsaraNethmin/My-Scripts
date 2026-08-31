@@ -1,0 +1,51 @@
+name: spinup-couchdb
+
+services:
+  couchdb:
+    image: couchdb:3
+    restart: unless-stopped
+    environment:
+      COUCHDB_USER: ${COUCHDB_USER:-spinup}
+      COUCHDB_PASSWORD: ${COUCHDB_PASSWORD:-spinup}
+      # Pinning the cookie-auth secret keeps browser sessions valid across a
+      # `spinup restart`; CouchDB otherwise generates one into a config file
+      # that does not live on the data volume.
+      COUCHDB_SECRET: ${COUCHDB_SECRET:-spinup-local-secret}
+    ports:
+      # Fauxton, the web GUI, is served by CouchDB itself at /_utils on this
+      # same port.
+      - "${COUCHDB_PORT:-5984}:5984"
+    volumes:
+      - couchdb-data:/opt/couchdb/data
+    healthcheck:
+      # /_up is CouchDB's own readiness endpoint and needs no credentials.
+      # The image is Debian-based: it has curl and no wget.
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:5984/_up"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  # A stock CouchDB 3 starts with no _users / _replicator / _global_changes
+  # databases, and nags in Fauxton until they exist. This one-shot POSTs the
+  # documented single-node setup once the server is healthy, then exits. It is
+  # idempotent, so it can run on every start. Same image as the server, so it
+  # costs no extra pull.
+  couchdb-setup:
+    image: couchdb:3
+    restart: "no"
+    depends_on:
+      couchdb:
+        condition: service_healthy
+    environment:
+      COUCHDB_USER: ${COUCHDB_USER:-spinup}
+      COUCHDB_PASSWORD: ${COUCHDB_PASSWORD:-spinup}
+    entrypoint: ["sh", "-c"]
+    command:
+      - >-
+        curl -fsS -X POST -H 'Content-Type: application/json'
+        -d "{\"action\":\"enable_single_node\",\"bind_address\":\"0.0.0.0\",\"port\":5984,\"singlenode\":true,\"username\":\"$${COUCHDB_USER}\",\"password\":\"$${COUCHDB_PASSWORD}\"}"
+        "http://$${COUCHDB_USER}:$${COUCHDB_PASSWORD}@couchdb:5984/_cluster_setup"
+
+volumes:
+  couchdb-data:
