@@ -4,9 +4,9 @@ Microsoft SQL Server 2022, Developer edition — free and feature-complete for
 non-production use.
 
 ```
-spinup up mssql
-spinup url mssql              # print the connection string
-spinup cli mssql              # sqlcmd, inside the container
+spin up mssql
+spin url mssql              # print the connection string
+spin cli mssql              # sqlcmd, inside the container
 ```
 
 There is no GUI in this stack. Use Azure Data Studio, DBeaver or SSMS from the
@@ -42,7 +42,7 @@ database stacks there is no `init/` directory here. Seed it after the container
 is healthy:
 
 ```
-spinup up mssql
+spin up mssql
 docker exec -i spinup-mssql-mssql-1 /opt/mssql-tools18/bin/sqlcmd \
   -S 127.0.0.1 -U sa -P 'Spinup!Passw0rd' -C -i /dev/stdin < schema.sql
 ```
@@ -72,4 +72,4 @@ real thing.
   certificate or every connection fails.
 - You must accept the [Microsoft EULA](https://go.microsoft.com/fwlink/?linkid=857698)
   (`MSSQL_ACCEPT_EULA=Y`) for the image to start at all.
-- `spinup down` keeps your data; only `spinup destroy` deletes it.
+- `spin down` keeps your data; only `spin destroy` deletes it.

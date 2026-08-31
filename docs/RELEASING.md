@@ -74,7 +74,7 @@ Then watch Actions. When it is green:
 
 ```sh
 brew install DulsaraNethmin/tap/spinup
-spinup version        # prints the tag, v-prefix and all
+spin version        # prints the tag, v-prefix and all
 ```
 
 **Why v1.1.0 and not v0.1.0** — this repository was tagged `v1.0.0` in its
@@ -117,14 +117,14 @@ has to be done for them:
 | --- | --- |
 | Homebrew (macOS) | `brew upgrade spinup` |
 | Scoop (Windows) | `scoop update spinup` |
-| `install.sh` / `install.ps1` | `spinup update`, or re-run the installer |
-| The archive, by hand | `spinup update` |
+| `install.sh` / `install.ps1` | `spin update`, or re-run the installer |
+| The archive, by hand | `spin update` |
 
-`spinup update` downloads the archive for the running platform, checks it
+`spin update` downloads the archive for the running platform, checks it
 against `checksums.txt`, and replaces the binary in place. It refuses to touch
 a binary Homebrew or Scoop owns — that file belongs to the package manager, and
 overwriting it is undone by the next upgrade — and prints the right command
-instead. `spinup update --check` only reports.
+instead. `spin update --check` only reports.
 
 Both installers read the same release through the API, so a release missing its
 `checksums.txt` breaks them: nothing installs unverified.

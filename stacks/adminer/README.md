@@ -4,8 +4,8 @@
 file: MySQL, MariaDB, PostgreSQL, SQLite, MongoDB and more, from one page.
 
 ```
-spinup up adminer             # http://localhost:8084
-spinup open adminer           # the same, in your browser
+spin up adminer             # http://localhost:8084
+spin open adminer           # the same, in your browser
 ```
 
 ## Ports

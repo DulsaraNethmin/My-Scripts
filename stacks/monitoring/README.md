@@ -7,9 +7,9 @@ daemon — including the other spinup stacks. A dashboard is provisioned, so
 `--gui` opens on graphs rather than on a setup wizard.
 
 ```
-spinup up monitoring              # Prometheus on http://localhost:9090
-spinup up monitoring --gui        # + Grafana on http://localhost:8095
-spinup open monitoring            # Grafana, already pointed at Prometheus
+spin up monitoring              # Prometheus on http://localhost:9090
+spin up monitoring --gui        # + Grafana on http://localhost:8095
+spin open monitoring            # Grafana, already pointed at Prometheus
 ```
 
 ## Ports
@@ -36,7 +36,7 @@ Prometheus has no authentication, which is how it ships.
 
 The Grafana account is created on the first start and then lives in the
 `grafana-data` volume; changing `GRAFANA_PASSWORD` afterwards does nothing.
-Change it in the UI, or `spinup destroy monitoring`.
+Change it in the UI, or `spin destroy monitoring`.
 
 ## What is provisioned
 
@@ -68,7 +68,7 @@ the JSON, save it there, and set its data source uid to `spinup-prometheus`.
 ```
 
 To scrape your own app, add a job and put the app's container on this stack's
-network (`spinup-monitoring_default`). `spinup restart monitoring` reloads the
+network (`spinup-monitoring_default`). `spin restart monitoring` reloads the
 file; `--web.enable-lifecycle` is on, so `curl -XPOST
 localhost:9090/-/reload` works too.
 
@@ -89,14 +89,14 @@ container panel, so it has data either way; the legends are just container ids
 rather than names on Docker Desktop.
 
 This is a limitation of what the platform exposes, not something the stack can
-configure around. If names matter to you on a Mac, `spinup ps` and Portainer
+configure around. If names matter to you on a Mac, `spin ps` and Portainer
 both have them.
 
 ## Storage
 
 `prometheus-data` holds the time series, `grafana-data` the accounts and
-anything edited in the UI. `spinup down monitoring` keeps both;
-`spinup destroy monitoring` deletes them.
+anything edited in the UI. `spin down monitoring` keeps both;
+`spin destroy monitoring` deletes them.
 
 `PROMETHEUS_RETENTION` defaults to 15 days, which for these two exporters is a
 few hundred megabytes.

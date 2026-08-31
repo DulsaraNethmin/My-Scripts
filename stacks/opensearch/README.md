@@ -4,9 +4,9 @@
 Elasticsearch — with OpenSearch Dashboards as the optional web GUI.
 
 ```
-spinup up opensearch                 # REST API on http://localhost:9200
-spinup up opensearch --gui           # + Dashboards on http://localhost:8094
-spinup cli opensearch                # lists the indices
+spin up opensearch                 # REST API on http://localhost:9200
+spin up opensearch --gui           # + Dashboards on http://localhost:8094
+spin cli opensearch                # lists the indices
 curl localhost:9200/_cluster/health
 ```
 
@@ -48,8 +48,8 @@ bodies work unchanged. Dashboards is the fork of Kibana at the same point.
 
 ## Storage
 
-`opensearch-data` holds the indices. `spinup down opensearch` keeps them,
-`spinup destroy opensearch` deletes them.
+`opensearch-data` holds the indices. `spin down opensearch` keeps them,
+`spin destroy opensearch` deletes them.
 
 ## Notes
 
@@ -68,4 +68,4 @@ bodies work unchanged. Dashboards is the fork of Kibana at the same point.
   and waits for OpenSearch to be healthy before starting.
 - This is the heaviest image in the catalog after `mssql` and `pytorch`
   (~2 GB), and the JVM takes around 40 seconds to come up. The default
-  `spinup up` timeout of three minutes is comfortably enough.
+  `spin up` timeout of three minutes is comfortably enough.

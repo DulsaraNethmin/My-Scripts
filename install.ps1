@@ -99,18 +99,21 @@ try {
     }
 
     Expand-Archive -Path $zip -DestinationPath $tmp -Force
-    $exe = Join-Path $tmp 'spinup.exe'
-    if (-not (Test-Path $exe)) { throw 'the archive has no spinup.exe in it' }
+    $exe = Join-Path $tmp 'spin.exe'
+    if (-not (Test-Path $exe)) { throw 'the archive has no spin.exe in it' }
+    $alias = Join-Path $tmp 'spinup.exe'
+    if (-not (Test-Path $alias)) { throw 'the archive has no spinup.exe in it' }
 
     New-Item -ItemType Directory -Path $Dir -Force | Out-Null
-    Move-Item -Path $exe -Destination (Join-Path $Dir 'spinup.exe') -Force
+    Move-Item -Path $exe -Destination (Join-Path $Dir 'spin.exe') -Force
+    Move-Item -Path $alias -Destination (Join-Path $Dir 'spinup.exe') -Force
 }
 finally {
     Remove-Item -Path $tmp -Recurse -Force -ErrorAction SilentlyContinue
 }
 
 Write-Host ""
-Write-Host "spinup $tag installed at $(Join-Path $Dir 'spinup.exe')"
+Write-Host "spin $tag installed at $(Join-Path $Dir 'spin.exe'), with spinup.exe beside it"
 
 # Put the directory on the user's PATH if it is not there already. This edits
 # the user environment, not the machine's, so it needs no administrator.
@@ -123,8 +126,8 @@ if (($userPath -split ';') -notcontains $Dir) {
 
 Write-Host ""
 Write-Host "Next:"
-Write-Host "  spinup doctor          check Docker is ready"
-Write-Host "  spinup list            the stack catalog"
-Write-Host "  spinup up postgres     Postgres 16 + pgAdmin"
+Write-Host "  spin doctor          check Docker is ready"
+Write-Host "  spin list            the stack catalog"
+Write-Host "  spin up postgres     Postgres 16 + pgAdmin"
 Write-Host ""
-Write-Host "Shell completion: spinup completion powershell --help"
+Write-Host "Shell completion: spin completion powershell --help"

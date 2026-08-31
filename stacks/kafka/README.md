@@ -5,10 +5,10 @@ ZooKeeper — with [kafka-ui](https://github.com/kafbat/kafka-ui) as the optiona
 web GUI.
 
 ```
-spinup up kafka                  # broker on localhost:9092
-spinup up kafka --gui            # + kafka-ui on http://localhost:8093
-spinup cli kafka                 # lists the topics
-spinup shell kafka               # the container, with bin/ on PATH
+spin up kafka                  # broker on localhost:9092
+spin up kafka --gui            # + kafka-ui on http://localhost:8093
+spin cli kafka                 # lists the topics
+spin shell kafka               # the container, with bin/ on PATH
 ```
 
 ## Ports
@@ -44,8 +44,8 @@ cause. If you override `KAFKA_PORT`, the advertised host address follows it.
 ## Using it
 
 ```
-spinup cli kafka                                          # list topics
-spinup shell kafka
+spin cli kafka                                          # list topics
+spin shell kafka
   ./bin/kafka-topics.sh --bootstrap-server 127.0.0.1:9092 --create --topic demo
   ./bin/kafka-console-producer.sh --bootstrap-server 127.0.0.1:9092 --topic demo
   ./bin/kafka-console-consumer.sh --bootstrap-server 127.0.0.1:9092 --topic demo --from-beginning
@@ -59,8 +59,8 @@ is also why a typo in a topic name is silently a new topic. Set
 
 ## Storage
 
-`kafka-data` holds the log segments and the KRaft metadata log. `spinup down
-kafka` keeps them, `spinup destroy kafka` deletes them — and deleting them
+`kafka-data` holds the log segments and the KRaft metadata log. `spin down
+kafka` keeps them, `spin destroy kafka` deletes them — and deleting them
 resets the cluster id, so a consumer group's committed offsets go with it.
 
 ## Notes

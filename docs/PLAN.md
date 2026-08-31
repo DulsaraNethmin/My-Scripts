@@ -8,7 +8,7 @@ The goal in one line:
 
 ```
 brew install DulsaraNethmin/tap/spinup     # or curl | sh, or scoop
-spinup up postgres                          # → Postgres 16 + pgAdmin, running in ~10 s
+spin up postgres                          # → Postgres 16 + pgAdmin, running in ~10 s
 ```
 
 No cloning, no editing YAML, no remembering ports and passwords.
@@ -83,7 +83,7 @@ Key decisions:
   materialised into `~/.spinup/stacks/<name>/` (so users can see and tweak them) and a
   `~/.spinup/env/<name>.env` is created from the stack's `.env.example`.
 * **User overrides**: anything in `~/.spinup/stacks/<name>/` wins over the embedded copy;
-  `spinup new <name>` scaffolds a user stack there; `spinup reset <name>` restores the
+  `spin new <name>` scaffolds a user stack there; `spin reset <name>` restores the
   embedded version.
 * **Compose project naming**: `spinup-<stack>`, so `docker ps` and Docker Desktop show where
   containers came from and stacks never collide with the user's own projects.
@@ -97,25 +97,25 @@ Key decisions:
 ## 3. Command surface
 
 ```
-spinup up <stack>... [--gui] [--gpu] [--build] [--port name=1234]
-spinup down <stack>...              stop, keep data
-spinup restart <stack>...
-spinup destroy <stack>... [-y]      stop AND delete volumes (confirms)
-spinup list                         all stacks: name, description, status, ports
-spinup ps [stack]                   containers with health, ports, uptime
-spinup logs <stack> [-f] [service]
-spinup shell <stack> [service]      exec into the primary container
-spinup cli <stack>                  open the native client (psql / mysql / mongosh / redis-cli)
-spinup open <stack>                 open the stack's GUI URL in the browser
-spinup env <stack> [--edit]         show or edit ports/credentials for the stack
-spinup url <stack>                  print the connection string (postgres://user:pass@localhost:5432/db)
-spinup info <stack>                 README of the stack: what it is, ports, creds, gotchas
-spinup doctor                       docker daemon, compose v2, port collisions, disk, GPU
-spinup new <name>                   scaffold a user stack in ~/.spinup/stacks/<name>
-spinup reset <name>                 restore a built-in stack to its embedded version
-spinup update                       self-update the binary (GitHub Releases)
-spinup completion <shell>           bash/zsh/fish/powershell completions
-spinup version
+spin up <stack>... [--gui] [--gpu] [--build] [--port name=1234]
+spin down <stack>...              stop, keep data
+spin restart <stack>...
+spin destroy <stack>... [-y]      stop AND delete volumes (confirms)
+spin list                         all stacks: name, description, status, ports
+spin ps [stack]                   containers with health, ports, uptime
+spin logs <stack> [-f] [service]
+spin shell <stack> [service]      exec into the primary container
+spin cli <stack>                  open the native client (psql / mysql / mongosh / redis-cli)
+spin open <stack>                 open the stack's GUI URL in the browser
+spin env <stack> [--edit]         show or edit ports/credentials for the stack
+spin url <stack>                  print the connection string (postgres://user:pass@localhost:5432/db)
+spin info <stack>                 README of the stack: what it is, ports, creds, gotchas
+spin doctor                       docker daemon, compose v2, port collisions, disk, GPU
+spin new <name>                   scaffold a user stack in ~/.spinup/stacks/<name>
+spin reset <name>                 restore a built-in stack to its embedded version
+spin update                       self-update the binary (GitHub Releases)
+spin completion <shell>           bash/zsh/fish/powershell completions
+spin version
 ```
 
 Behavioural rules:
@@ -125,7 +125,7 @@ Behavioural rules:
 * `--gui` and `--gpu` map to Compose **profiles** in the stack (`gui`, `gpu`). Whether GUIs are on
   by default is a config option (`spinup config set gui true`).
 * `--port` overrides a host port for this invocation without editing the env file; a persistent
-  change goes through `spinup env <stack> --edit`.
+  change goes through `spin env <stack> --edit`.
 * Anything after `--` is passed straight to `docker compose`, so power users are never blocked.
 * Output is colourised with `NO_COLOR` respected; `--json` on `list`/`ps` for scripting.
 * Exit codes: 0 ok, 1 usage, 2 docker not available, 3 stack not found, 4 compose failed.
@@ -143,7 +143,7 @@ stacks/postgres/
 ├── compose.yaml        # Compose v2, no version: key, env-driven, profiles for gui/gpu
 ├── .env.example        # every tunable with its default, one comment each
 ├── spinup.yaml         # metadata read by the CLI
-└── README.md           # shown by `spinup info postgres`
+└── README.md           # shown by `spin info postgres`
 ```
 
 `spinup.yaml`:
@@ -262,7 +262,7 @@ casks are macOS-only, so Linux is served by the archives and `install.sh`.
 
 * GoReleaser: darwin/linux/windows × amd64/arm64, checksums, cosign signatures.
 * Homebrew tap + Scoop bucket auto-updated by the release workflow; winget manifest PR script.
-* `install.sh` / `install.ps1`; `spinup update` self-updater; shell completions.
+* `install.sh` / `install.ps1`; `spin update` self-updater; shell completions.
 * First tagged release `v1.1.0` with the Phase-1 catalog (§7.6 explains the number).
   README hero switches to the install one-liner.
 

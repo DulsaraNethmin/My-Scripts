@@ -10,7 +10,7 @@ import (
 
 // --json is an interface other programs read, so what matters is that it
 // parses, that the ports are the resolved ones, and that the connection string
-// is the same one `spinup url` prints.
+// is the same one `spin url` prints.
 func TestListJSON(t *testing.T) {
 	out, _, err := runCmd(t, newListCmd(), "--json")
 	if err != nil {

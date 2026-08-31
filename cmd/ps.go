@@ -52,7 +52,7 @@ func newPSCmd() *cobra.Command {
 					// running has to be able to read the answer "nothing".
 					return writeJSON(out, []containerJSON{})
 				}
-				fmt.Fprintln(out, ui.Dim("no spinup stacks are running — try `spinup up postgres`"))
+				fmt.Fprintln(out, ui.Dim("no spinup stacks are running — try `spin up postgres`"))
 				return nil
 			}
 
@@ -103,7 +103,7 @@ func newPSCmd() *cobra.Command {
 	return cmd
 }
 
-// containerJSON is `spinup ps --json`: compose's own view of a container,
+// containerJSON is `spin ps --json`: compose's own view of a container,
 // named the way spinup names things, with the published ports flattened into
 // something a script can index.
 type containerJSON struct {

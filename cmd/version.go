@@ -14,7 +14,7 @@ func newVersionCmd(b Build) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "version",
-		Short: "Print the spinup version",
+		Short: "Print the version",
 		Args:  cobra.NoArgs,
 		RunE: func(cmd *cobra.Command, _ []string) error {
 			out := cmd.OutOrStdout()
@@ -24,7 +24,7 @@ func newVersionCmd(b Build) *cobra.Command {
 				return nil
 			}
 
-			fmt.Fprintf(out, "%s %s\n", ui.Bold("spinup"), b.Version)
+			fmt.Fprintf(out, "%s %s\n", ui.Bold("spin"), b.Version)
 			for _, f := range [][2]string{
 				{"commit", b.Commit},
 				{"built", b.Date},

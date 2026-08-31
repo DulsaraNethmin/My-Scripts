@@ -48,7 +48,7 @@ func execute(t *testing.T, c *cobra.Command, ctx context.Context, args ...string
 }
 
 // A scaffolded stack has to be a stack: four files, and a spinup.yaml the
-// catalog accepts. A template that has to be fixed before `spinup up` works is
+// catalog accepts. A template that has to be fixed before `spin up` works is
 // not much of a starting point.
 func TestNewScaffoldsAValidStack(t *testing.T) {
 	ctx, paths := authoringCtx(t)
@@ -65,7 +65,7 @@ func TestNewScaffoldsAValidStack(t *testing.T) {
 		}
 	}
 
-	// Loading it through a catalog is the same validation `spinup up` does.
+	// Loading it through a catalog is the same validation `spin up` does.
 	s, err := catalog.New(os.DirFS(paths.StacksDir())).Load("my-thing")
 	if err != nil {
 		t.Fatalf("the scaffolded stack does not load: %v", err)

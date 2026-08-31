@@ -6,11 +6,11 @@ import (
 )
 
 // Scaffold returns the four files of a new stack, ready to write into
-// ~/.spinup/stacks/<name>/. It is what `spinup new` starts from.
+// ~/.spinup/stacks/<name>/. It is what `spin new` starts from.
 //
 // The result is a stack that actually runs — an nginx serving its own default
 // page — rather than a skeleton of comments. Something that comes up healthy on
-// the first `spinup up` is a better starting point than a template that has to
+// the first `spin up` is a better starting point than a template that has to
 // be finished before it can be tried, and every convention a stack has to
 // follow (env-driven ports, a pinned tag, a healthcheck on 127.0.0.1, a named
 // volume) is there to be copied rather than described.
@@ -38,7 +38,7 @@ ports:
 #     inline default, so ~/.spinup/env/%[1]s.env can override them
 #   * healthcheck the primary service against 127.0.0.1 — in several images
 #     localhost resolves to ::1 first while the service binds IPv4 only
-#   * keep data in a named volume, so `+"`spinup down`"+` never destroys it
+#   * keep data in a named volume, so `+"`spin down`"+` never destroys it
 
 services:
   app:
@@ -59,8 +59,8 @@ volumes:
   data:
 `, name, portVar),
 
-		EnvExample: fmt.Sprintf(`# %[1]s — copied to ~/.spinup/env/%[1]s.env on the first `+"`spinup up`"+`.
-# Edit that copy, not this one: `+"`spinup env %[1]s --edit`"+`.
+		EnvExample: fmt.Sprintf(`# %[1]s — copied to ~/.spinup/env/%[1]s.env on the first `+"`spin up`"+`.
+# Edit that copy, not this one: `+"`spin env %[1]s --edit`"+`.
 %[2]s=8099
 `, name, portVar),
 
@@ -69,8 +69,8 @@ volumes:
 A stack of my own.
 
 `+"```"+`
-spinup up %[1]s
-spinup info %[1]s
+spin up %[1]s
+spin info %[1]s
 `+"```"+`
 
 ## What it runs
@@ -86,9 +86,9 @@ nginx, until you edit `+"`compose.yaml`"+` into something else. The stack lives 
 
 ## Notes
 
-- `+"`spinup up %[1]s`"+` waits for the healthcheck, so add one to every service
+- `+"`spin up %[1]s`"+` waits for the healthcheck, so add one to every service
   worth waiting for.
-- `+"`spinup down`"+` keeps the volume; `+"`spinup destroy`"+` is the only thing that
+- `+"`spin down`"+` keeps the volume; `+"`spin destroy`"+` is the only thing that
   deletes it.
 `, name, portVar),
 	}

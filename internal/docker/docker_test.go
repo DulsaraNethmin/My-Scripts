@@ -189,7 +189,7 @@ func TestDiagnoseGPU(t *testing.T) {
 	}
 }
 
-// spinup up passes --wait-timeout on every run, so a plugin without it is
+// spin up passes --wait-timeout on every run, so a plugin without it is
 // reported before the first command fails.
 func TestDiagnoseComposeWithoutWaitTimeout(t *testing.T) {
 	f := healthy()

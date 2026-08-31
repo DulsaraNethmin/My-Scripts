@@ -15,7 +15,7 @@ const (
 	StatusFail Status = "fail"
 )
 
-// Check is one line of `spinup doctor`: what was checked, what was found, and
+// Check is one line of `spin doctor`: what was checked, what was found, and
 // — when it went wrong — what to do about it.
 type Check struct {
 	Name   string
@@ -73,11 +73,11 @@ func (c *Client) Diagnose(ctx context.Context) []Check {
 			Hint: "install the docker compose plugin (see setup/ in the spinup repo)",
 		})
 	case !c.SupportsWaitTimeout(ctx):
-		// Every `spinup up` passes --wait-timeout, so a plugin without it
+		// Every `spin up` passes --wait-timeout, so a plugin without it
 		// fails on the first command rather than here.
 		checks = append(checks, Check{
 			Name: "compose", Detail: "v" + compose + ", without --wait-timeout", Status: StatusWarn,
-			Hint: "upgrade the compose plugin; `spinup up` waits for healthy with that flag",
+			Hint: "upgrade the compose plugin; `spin up` waits for healthy with that flag",
 		})
 	default:
 		checks = append(checks, Check{Name: "compose", Detail: "v" + compose, Status: StatusOK})
@@ -103,10 +103,10 @@ func (c *Client) gpuCheck(ctx context.Context) Check {
 		return Check{
 			Name: "gpu", Detail: "an NVIDIA driver is installed but docker has no nvidia runtime",
 			Status: StatusWarn,
-			Hint:   "install nvidia-container-toolkit and restart docker, or skip `spinup up pytorch --gpu`",
+			Hint:   "install nvidia-container-toolkit and restart docker, or skip `spin up pytorch --gpu`",
 		}
 	default:
-		return Check{Name: "gpu", Detail: "no nvidia runtime (only `spinup up pytorch --gpu` needs one)", Status: StatusOK}
+		return Check{Name: "gpu", Detail: "no nvidia runtime (only `spin up pytorch --gpu` needs one)", Status: StatusOK}
 	}
 }
 

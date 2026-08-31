@@ -21,7 +21,7 @@ func newNewCmd() *cobra.Command {
 		Use:   "new <name>",
 		Short: "Scaffold a stack of your own",
 		Long: "new writes a new stack into ~/.spinup/stacks/<name>/ — the four files\n" +
-			"every stack has — and it runs as it stands, so you can `spinup up` it\n" +
+			"every stack has — and it runs as it stands, so you can `spin up` it\n" +
 			"first and edit it second.\n\n" +
 			"--from <stack> starts from a copy of an existing stack instead. A stack\n" +
 			"in ~/.spinup/stacks shadows a built-in one of the same name, so copying\n" +
@@ -42,7 +42,7 @@ func newNewCmd() *cobra.Command {
 					"%q is not a stack name — lower case letters, digits and dashes", name)
 			}
 			if cat.Has(name) {
-				return failf(ExitUsage, "%s already exists — `spinup info %s`, or pick another name", name, name)
+				return failf(ExitUsage, "%s already exists — `spin info %s`, or pick another name", name, name)
 			}
 
 			paths, err := config.DefaultPaths()
@@ -82,7 +82,7 @@ func newNewCmd() *cobra.Command {
 			}
 
 			fmt.Fprintf(out, "\nNext:\n  %s\n  %s\n",
-				ui.Dim("spinup up "+name), ui.Dim("$EDITOR "+filepath.Join(dir, "compose.yaml")))
+				ui.Dim("spin up "+name), ui.Dim("$EDITOR "+filepath.Join(dir, "compose.yaml")))
 			return nil
 		},
 	}
@@ -93,7 +93,7 @@ func newNewCmd() *cobra.Command {
 }
 
 // writeScaffold writes a new stack's files, and cleans up after itself if it
-// cannot finish: half a stack is worse than none, because `spinup list` would
+// cannot finish: half a stack is worse than none, because `spin list` would
 // then report a broken one forever.
 func writeScaffold(name, dir string) ([]string, error) {
 	if err := os.MkdirAll(dir, 0o755); err != nil {

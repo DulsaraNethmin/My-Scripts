@@ -5,9 +5,9 @@
 from the same port.
 
 ```
-spinup up couchdb                     # http://localhost:5984
-spinup open couchdb                   # Fauxton, at /_utils
-spinup cli couchdb                    # lists the databases
+spin up couchdb                     # http://localhost:5984
+spin open couchdb                   # Fauxton, at /_utils
+spin cli couchdb                    # lists the databases
 curl http://spinup:spinup@localhost:5984/_all_dbs
 ```
 
@@ -50,8 +50,8 @@ curl           http://spinup:spinup@localhost:5984/notes/_changes?feed=continuou
 
 ## Storage
 
-`couchdb-data` holds the databases. `spinup down couchdb` keeps them,
-`spinup destroy couchdb` deletes them.
+`couchdb-data` holds the databases. `spin down couchdb` keeps them,
+`spin destroy couchdb` deletes them.
 
 Note that the *config* — the admin user and the auth secret — is not on that
 volume; it is rebuilt from the environment each start. That is why the two
@@ -63,7 +63,7 @@ behave differently.
   single-node setup (`POST /_cluster_setup`) once the server is healthy, which
   creates the `_users` and `_replicator` system databases. A stock CouchDB 3 has
   neither, and Fauxton nags about it on every page. It is idempotent, runs
-  on every start, and shows as `Exited (0)` in `spinup ps`.
+  on every start, and shows as `Exited (0)` in `spin ps`.
 - The healthcheck uses `curl`, not `wget`: this image is Debian-based and ships
   curl only. `/_up` is CouchDB's own readiness endpoint and needs no auth.
 - `COUCHDB_SECRET` is pinned so that a restart does not invalidate browser

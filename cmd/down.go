@@ -20,8 +20,8 @@ func newDownCmd() *cobra.Command {
 		Use:   "down <stack>... [-- docker compose args]",
 		Short: "Stop one or more stacks, keeping their data",
 		Long: "down stops a stack's containers and leaves its data volumes alone, so\n" +
-			"`spinup up` brings it back with everything still in it.\n\n" +
-			"To delete the data, use `spinup destroy`.",
+			"`spin up` brings it back with everything still in it.\n\n" +
+			"To delete the data, use `spin destroy`.",
 		Args:              cobra.MinimumNArgs(1),
 		ValidArgsFunction: completeStacks,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -50,7 +50,7 @@ func newDownCmd() *cobra.Command {
 					return runCompose(err)
 				}
 
-				fmt.Fprintf(out, "  %s\n", ui.Dim("data kept — `spinup destroy "+name+"` deletes it"))
+				fmt.Fprintf(out, "  %s\n", ui.Dim("data kept — `spin destroy "+name+"` deletes it"))
 			}
 			return nil
 		},

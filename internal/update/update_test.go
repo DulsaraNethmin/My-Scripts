@@ -138,7 +138,7 @@ func TestVerify(t *testing.T) {
 func TestBinaryFromArchives(t *testing.T) {
 	want := []byte("#!/bin/sh\necho spinup\n")
 
-	got, err := update.Binary(tarGz(t, want), "linux")
+	got, err := update.Binary(tarGz(t, want), "linux", "spinup")
 	if err != nil {
 		t.Fatalf("Binary from tar.gz: %v", err)
 	}
@@ -146,7 +146,7 @@ func TestBinaryFromArchives(t *testing.T) {
 		t.Errorf("tar.gz gave %q, want %q", got, want)
 	}
 
-	got, err = update.Binary(zipped(t, want), "windows")
+	got, err = update.Binary(zipped(t, want), "windows", "spinup")
 	if err != nil {
 		t.Fatalf("Binary from zip: %v", err)
 	}
@@ -154,10 +154,10 @@ func TestBinaryFromArchives(t *testing.T) {
 		t.Errorf("zip gave %q, want %q", got, want)
 	}
 
-	if _, err := update.Binary([]byte("not an archive"), "linux"); err == nil {
+	if _, err := update.Binary([]byte("not an archive"), "linux", "spinup"); err == nil {
 		t.Error("Binary accepted something that is not an archive")
 	}
-	if _, err := update.Binary(tarGz(t, want), "windows"); err == nil {
+	if _, err := update.Binary(tarGz(t, want), "windows", "spinup"); err == nil {
 		t.Error("Binary read a tar.gz as a zip")
 	}
 }
@@ -309,6 +309,32 @@ func TestManagedBy(t *testing.T) {
 		}
 		if mgr.Name != tc.want {
 			t.Errorf("ManagedBy(%q) = %q, want %q", tc.path, mgr.Name, tc.want)
+		}
+	}
+}
+
+// SelfName decides which of the archive's two binaries replaces the running
+// one. Getting it backwards would leave a user who installed `spin` running a
+// file called `spinup`, and vice versa.
+func TestSelfName(t *testing.T) {
+	for _, tc := range []struct {
+		path string
+		want string
+	}{
+		{"/usr/local/bin/spin", "spin"},
+		{"/usr/local/bin/spinup", "spinup"},
+		// Built with filepath.Join so the separator is this platform's: a
+		// literal backslash is only a separator to filepath.Base on Windows.
+		{filepath.Join("tools", "spin.exe"), "spin"},
+		{filepath.Join("tools", "spinup.exe"), "spinup"},
+		{"/opt/homebrew/Caskroom/spinup/1.2.0/spin", "spin"},
+		// Anything else is a renamed copy or a `go build -o`; the taught name
+		// is the safe default.
+		{"/tmp/scratch/sp", "spin"},
+		{"", "spin"},
+	} {
+		if got := update.SelfName(tc.path); got != tc.want {
+			t.Errorf("SelfName(%q) = %q, want %q", tc.path, got, tc.want)
 		}
 	}
 }

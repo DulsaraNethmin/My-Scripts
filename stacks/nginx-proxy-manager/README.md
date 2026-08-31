@@ -4,8 +4,8 @@
 web UI and one-click Let's Encrypt certificates.
 
 ```
-spinup up nginx-proxy-manager
-spinup open nginx-proxy-manager      # the admin UI on :81
+spin up nginx-proxy-manager
+spin open nginx-proxy-manager      # the admin UI on :81
 ```
 
 ## Ports
@@ -61,7 +61,7 @@ The proxy database and issued certificates live in the `npm-data` and
 `./letsencrypt`, which wrote certificates and a SQLite database straight into
 the repo folder.
 
-`spinup down` keeps them; `spinup destroy` deletes them — including every
+`spin down` keeps them; `spin destroy` deletes them — including every
 certificate you have issued.
 
 ## Gotchas

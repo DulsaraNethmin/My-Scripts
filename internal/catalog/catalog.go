@@ -80,7 +80,7 @@ func (c *Catalog) find(name string) (layer, bool) {
 
 // Names returns every stack in the catalog, sorted and de-duplicated across
 // layers. Directories that are not valid stack names are ignored, so a stray
-// file cannot break `spinup list`.
+// file cannot break `spin list`.
 func (c *Catalog) Names() ([]string, error) {
 	seen := map[string]bool{}
 
@@ -114,7 +114,7 @@ func (c *Catalog) Has(name string) bool {
 }
 
 // HasBuiltin reports whether the binary ships a copy of the stack, whatever the
-// user's own catalog holds. `spinup reset` needs it: restoring a stack means
+// user's own catalog holds. `spin reset` needs it: restoring a stack means
 // deleting the user's copy, which for a stack that only exists there would not
 // be a restore but a delete.
 func (c *Catalog) HasBuiltin(name string) bool {
@@ -206,7 +206,7 @@ func (c *Catalog) Load(name string) (*Stack, error) {
 
 // All parses every stack in the catalog. Stacks that fail to parse are
 // reported in the error but do not hide the ones that are fine — one broken
-// stack in ~/.spinup/stacks must not break `spinup list`.
+// stack in ~/.spinup/stacks must not break `spin list`.
 func (c *Catalog) All() ([]*Stack, error) {
 	names, err := c.Names()
 	if err != nil {
@@ -231,7 +231,7 @@ func (c *Catalog) All() ([]*Stack, error) {
 //
 // Existing files are never overwritten: materialising happens on every `up`,
 // and the whole point of writing the stack out is that the user can edit it.
-// `spinup reset` (task 4.2) is the way back to the built-in copy.
+// `spin reset` (task 4.2) is the way back to the built-in copy.
 func (c *Catalog) Materialize(name, dir string) ([]string, error) {
 	src, err := c.FS(name)
 	if err != nil {

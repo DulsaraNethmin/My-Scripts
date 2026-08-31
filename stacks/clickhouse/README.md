@@ -5,10 +5,10 @@ analytical queries over a lot of rows, with its Play query UI served from the
 same port as the HTTP API.
 
 ```
-spinup up clickhouse          # http://localhost:8123
-spinup open clickhouse        # Play, at /play
-spinup cli clickhouse         # clickhouse-client, inside the container
-spinup url clickhouse         # the HTTP connection string
+spin up clickhouse          # http://localhost:8123
+spin open clickhouse        # Play, at /play
+spin cli clickhouse         # clickhouse-client, inside the container
+spin url clickhouse         # the HTTP connection string
 ```
 
 ## Ports
@@ -41,7 +41,7 @@ passwordless superuser left listening on a published port. `SELECT name FROM
 system.users` returns exactly one row.
 
 The credentials are applied on the first start. Changing them later needs
-`spinup destroy clickhouse`.
+`spin destroy clickhouse`.
 
 ## Querying
 
@@ -53,7 +53,7 @@ curl 'http://spinup:spinup@localhost:8123/' --data-binary \
   "SELECT number, number*2 FROM numbers(5) FORMAT Pretty"
 ```
 
-Play (`spinup open clickhouse`) is the same thing with a text box, a results
+Play (`spin open clickhouse`) is the same thing with a text box, a results
 grid and query history. It asks for the credentials above.
 
 ## Seeding
@@ -75,8 +75,8 @@ them in `spinup`, which is a confusing five minutes.
 
 `clickhouse-data` holds the tables, `clickhouse-logs` the server logs — the
 second is a volume of its own because ClickHouse writes a lot of them and they
-would otherwise grow the container's writable layer. `spinup down clickhouse`
-keeps both; `spinup destroy clickhouse` deletes them.
+would otherwise grow the container's writable layer. `spin down clickhouse`
+keeps both; `spin destroy clickhouse` deletes them.
 
 ## Notes
 

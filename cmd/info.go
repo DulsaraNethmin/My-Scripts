@@ -122,7 +122,7 @@ func writeInfoHeader(out io.Writer, p *prepared) {
 
 	field("primary", s.Primary)
 	if s.CLI != "" {
-		field("client", "spinup cli "+s.Name)
+		field("client", "spin cli "+s.Name)
 	}
 	if len(s.Profiles) > 0 {
 		field("profiles", strings.Join(s.Profiles, ", "))

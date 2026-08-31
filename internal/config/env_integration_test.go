@@ -14,7 +14,7 @@ import (
 )
 
 // spinup passes the same env file to docker compose that it parses here, so
-// the two have to agree: if they don't, `spinup url` prints a port compose
+// the two have to agree: if they don't, `spin url` prints a port compose
 // never bound. This asks compose itself what it resolved and compares.
 func TestResolvedPortsMatchCompose(t *testing.T) {
 	if _, err := exec.LookPath("docker"); err != nil {

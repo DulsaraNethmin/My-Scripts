@@ -10,7 +10,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-// Category groups stacks in `spinup list`. The set is closed so a typo in a
+// Category groups stacks in `spin list`. The set is closed so a typo in a
 // spinup.yaml is caught rather than quietly creating a new group of one.
 type Category string
 
@@ -52,20 +52,20 @@ type Stack struct {
 	Primary     string   `yaml:"primary"` // service used by shell/cli/logs by default
 	CLI         string   `yaml:"cli"`     // native client command, run inside the primary service
 	GUI         *GUI     `yaml:"gui"`
-	URL         string   `yaml:"url"` // connection string, printed by `spinup url`
+	URL         string   `yaml:"url"` // connection string, printed by `spin url`
 	Ports       []Port   `yaml:"ports"`
 
 	// Profiles are the Compose profiles the stack defines. Anything behind a
 	// profile is off unless it is selected.
 	Profiles []string `yaml:"profiles"`
 
-	// DefaultProfiles are applied by `spinup up` when the user selects none.
+	// DefaultProfiles are applied by `spin up` when the user selects none.
 	// stacks/pytorch needs this: both of its services sit behind profiles and
 	// share ports, so with no profile the stack starts nothing at all.
 	DefaultProfiles []string `yaml:"default_profiles"`
 
 	// GPU names the profile and service that use the NVIDIA runtime, for
-	// `spinup up --gpu`.
+	// `spin up --gpu`.
 	GPU *GPU `yaml:"gpu"`
 
 	// Origin is filled in by the catalog, not by the file.
@@ -166,7 +166,7 @@ func (s *Stack) validate(dir string) error {
 	// The two validators have to agree, or a stack passes CI and then fails in
 	// the CLI, or the other way round.
 	if s.URL == "" {
-		bad("url is required — it is what `spinup url` prints")
+		bad("url is required — it is what `spin url` prints")
 	}
 	if len(s.Ports) == 0 {
 		bad("ports is required — a service nothing can connect to is not a stack")

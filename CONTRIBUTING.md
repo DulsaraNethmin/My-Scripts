@@ -41,7 +41,7 @@ stacks/<name>/
 ├── compose.yaml     the Compose project
 ├── .env.example     every tunable with its default and a comment
 ├── spinup.yaml      the metadata the CLI reads
-└── README.md        what `spinup info <name>` prints
+└── README.md        what `spin info <name>` prints
 ```
 
 `stacks/postgres/` is the reference to copy, and
@@ -94,27 +94,27 @@ password in a file before it starts. The pattern is a one-shot service with
 `restart: "no"` and `depends_on: condition: service_healthy` (or
 `service_completed_successfully` for one that must run first). Make it
 idempotent: it runs on every start. `docker compose up --wait` treats a
-container that exits 0 as satisfied, so this does not break `spinup up`.
+container that exits 0 as satisfied, so this does not break `spin up`.
 
 ### 6. Check it
 
 ```
 make stacks-lint       # the structural rules
 make stacks-validate   # docker compose config on every stack
-make build && ./bin/spinup up <name>
+make build && ./bin/spin up <name>
 ```
 
 The catalog is compiled into the binary, so **`make build` after every change
 under `stacks/`** — otherwise you are testing the old copy. If the stack is
-already materialised in `~/.spinup/stacks`, `spinup reset <name>` picks up the
+already materialised in `~/.spinup/stacks`, `spin reset <name>` picks up the
 new one.
 
 Test in a scratch home so nothing of yours is touched:
 
 ```
 export SPINUP_HOME=$(mktemp -d)
-./bin/spinup up <name>
-./bin/spinup destroy <name> -y
+./bin/spin up <name>
+./bin/spin destroy <name> -y
 ```
 
 A stack is not done until it comes up healthy, does the thing it is for — index
@@ -131,7 +131,7 @@ removes them. Very large or very slow images are left out — `mssql` and
 
 ### 8. Write the README
 
-It is what `spinup info <name>` prints, so write it for someone who has just
+It is what `spin info <name>` prints, so write it for someone who has just
 run the stack and wants to use it: ports, credentials, how to connect, how to
 seed it, what `destroy` deletes, and any gotcha you hit while building it.
 
@@ -179,7 +179,7 @@ Tests that need Docker are behind the `integration` build tag
 
 ## Reporting a bug
 
-`spinup doctor` and `spinup version` first — most first-run problems are a
+`spin doctor` and `spin version` first — most first-run problems are a
 port already taken, a credential changed after the volume was created, or
 Compose v1. Then open an issue with the output of both, the exact command, and
-what `spinup logs <stack>` says.
+what `spin logs <stack>` says.

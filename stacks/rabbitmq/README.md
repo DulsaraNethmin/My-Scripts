@@ -4,10 +4,10 @@
 broker on `5672` and its web UI on `8087`.
 
 ```
-spinup up rabbitmq            # broker + management UI
-spinup open rabbitmq          # the UI
-spinup url rabbitmq           # amqp://spinup:spinup@localhost:5672/
-spinup cli rabbitmq           # rabbitmqctl list_queues
+spin up rabbitmq            # broker + management UI
+spin open rabbitmq          # the UI
+spin url rabbitmq           # amqp://spinup:spinup@localhost:5672/
+spin cli rabbitmq           # rabbitmqctl list_queues
 ```
 
 ## Ports
@@ -41,8 +41,8 @@ another container it is `host.docker.internal` rather than `localhost`.
 ## Storage
 
 Queues, exchanges and messages that were published as persistent live in the
-`rabbitmq-data` volume, so `spinup down rabbitmq` keeps them and
-`spinup destroy rabbitmq` deletes them.
+`rabbitmq-data` volume, so `spin down rabbitmq` keeps them and
+`spin destroy rabbitmq` deletes them.
 
 `compose.yaml` sets a fixed `hostname:`. RabbitMQ names its node after the
 hostname and stores data under that name, so without one every recreate would
@@ -54,4 +54,4 @@ empty — the messages would still be on the volume, under a name nothing reads.
 - The management UI is a plugin inside the same container, so this stack has no
   `gui` profile: there is nothing separate to start.
 - The broker takes 15–30 seconds to become healthy on first start, which is
-  why `spinup up` waits rather than returning the moment the container exists.
+  why `spin up` waits rather than returning the moment the container exists.

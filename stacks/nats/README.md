@@ -4,8 +4,8 @@
 streams, key-value and object stores that survive a restart.
 
 ```
-spinup up nats                # nats://localhost:4222
-spinup url nats               # the connection string
+spin up nats                # nats://localhost:4222
+spin url nats               # the connection string
 curl localhost:8088/varz      # server stats
 curl localhost:8088/healthz   # what the healthcheck asks
 ```
@@ -32,7 +32,7 @@ nats://localhost:4222
 From another container, `nats://host.docker.internal:4222`.
 
 The `nats` CLI is not in this image — it is a separate download — so there is
-no `spinup cli nats`. Once you have it:
+no `spin cli nats`. Once you have it:
 
 ```
 nats --server localhost:4222 pub greet.joe 'hello'
@@ -43,14 +43,14 @@ nats --server localhost:4222 stream ls
 ## Storage
 
 JetStream writes to the `nats-data` volume (`--store_dir=/data`), so streams
-and key-value buckets survive `spinup down nats` and are deleted by
-`spinup destroy nats`. Plain pub/sub keeps nothing by design: a message with
+and key-value buckets survive `spin down nats` and are deleted by
+`spin destroy nats`. Plain pub/sub keeps nothing by design: a message with
 no subscriber is gone.
 
 ## Notes
 
 - The monitoring port serves JSON, not a web UI, so this stack declares no GUI
-  and `spinup open nats` has nothing to open. `/varz`, `/connz`, `/subsz` and
+  and `spin open nats` has nothing to open. `/varz`, `/connz`, `/subsz` and
   `/jsz` are the interesting ones.
 - The `nats:2-alpine` tag rather than `nats:2`: the default image is built on
   scratch and has no shell or wget, which leaves nothing to run a healthcheck

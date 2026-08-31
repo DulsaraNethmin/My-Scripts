@@ -44,9 +44,36 @@ builds:
       - amd64
       - arm64
 
+  # `spin` is the taught name and `spinup` the kept alias, and they have to be
+  # two real binaries rather than one plus a symlink: GoReleaser's Scoop config
+  # exposes no shim alias — `bin` is populated from the build artifacts — so a
+  # second name has to exist as a second artifact for Windows to get it at all.
+  # Doing it the same way on every platform beats a cask-only Ruby alias.
+  - id: spin
+    main: .
+    binary: spin
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w
+      - -X main.version=v{{ .Version }}
+      - -X main.commit={{ .FullCommit }}
+      - -X main.date={{ .Date }}
+    mod_timestamp: "{{ .CommitTimestamp }}"
+    goos:
+      - darwin
+      - linux
+      - windows
+    goarch:
+      - amd64
+      - arm64
+
 archives:
   - id: spinup
     ids:
+      - spin
       - spinup
     # spinup_1.1.0_darwin_arm64.tar.gz — no leading v, lowercase os/arch, so
     # install.sh can build the name from `uname -s | tr A-Z a-z` and `uname -m`.
@@ -111,8 +138,12 @@ signs:
 homebrew_casks:
   - name: spinup
     ids:
+      - spin
       - spinup
+    # Both names land in the Homebrew prefix. The cask stays `spinup` — the
+    # package is the project, the binaries are the commands.
     binaries:
+      - spin
       - spinup
     repository:
       owner: DulsaraNethmin
@@ -140,13 +171,14 @@ homebrew_casks:
       pre:
         install: |
           if system_command("/usr/bin/xattr", args: ["-h"]).exit_status == 0
+            system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/spin"]
             system_command "/usr/bin/xattr", args: ["-dr", "com.apple.quarantine", "#{staged_path}/spinup"]
           end
     # Homebrew generates the completion scripts by running the binary it just
     # installed, so `spinup up <tab>` works after a brew install with nothing
     # for the user to source.
     generate_completions_from_executable:
-      executable: spinup
+      executable: spin
       args:
         - completion
       shells:
@@ -170,6 +202,7 @@ homebrew_casks:
 scoops:
   - name: spinup
     ids:
+      - spin
       - spinup
     repository:
       owner: DulsaraNethmin
@@ -184,7 +217,7 @@ scoops:
       email: dulsaranethmin@gmail.com
     commit_msg_template: "spinup {{ .Tag }}"
     post_install:
-      - "Write-Host 'spinup needs Docker Desktop with Compose v2 running. Check it with: spinup doctor'"
+      - "Write-Host 'spin needs Docker Desktop with Compose v2 running. Check it with: spin doctor'"
 
 snapshot:
   version_template: "{{ incpatch .Version }}-snapshot-{{ .ShortCommit }}"
