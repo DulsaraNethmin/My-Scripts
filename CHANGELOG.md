@@ -7,10 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-The repository is being grown in place from `My-Scripts` — a collection of ad-hoc
-Compose files and shell scripts — into `spinup`, an installable CLI that starts
-local development services with one command. See `docs/PLAN.md` for the design and
-`docs/TASKS.tsv` for progress.
+Nothing yet.
+
+## [1.1.0] - 2026-08-31
+
+The first release of spinup. The repository was grown in place from `My-Scripts`
+— a collection of ad-hoc Compose files and shell scripts — into an installable
+CLI that starts local development services with one command. See `docs/PLAN.md`
+for the design.
 
 ### Added
 
@@ -416,4 +420,5 @@ That completes the Phase 5 catalog: 25 stacks.
   start it with `spinup up redis`" — rather than passing compose's own
   "service is not running" through.
 
-[unreleased]: https://github.com/DulsaraNethmin/spinup/commits/main
+[unreleased]: https://github.com/DulsaraNethmin/spinup/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/DulsaraNethmin/spinup/releases/tag/v1.1.0
