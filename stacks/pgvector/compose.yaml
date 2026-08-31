@@ -1,0 +1,33 @@
+name: spinup-pgvector
+
+services:
+  pgvector:
+    # The official postgres image with the vector extension compiled in and
+    # nothing else changed. The pg17 tag tracks PostgreSQL 17 and the current
+    # pgvector release together — there is no separate pgvector version in it.
+    image: pgvector/pgvector:pg17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${PGVECTOR_USER:-spinup}
+      POSTGRES_PASSWORD: ${PGVECTOR_PASSWORD:-spinup}
+      POSTGRES_DB: ${PGVECTOR_DB:-spinup}
+      # Keeps initdb deterministic across host locales.
+      POSTGRES_INITDB_ARGS: --encoding=UTF8 --locale=C
+    ports:
+      # 5433 on the host: the postgres stack has 5432, and every stack has to
+      # be able to run beside every other one.
+      - "${PGVECTOR_PORT:-5433}:5432"
+    volumes:
+      - pgvector-data:/var/lib/postgresql/data
+      # init/01-vector.sql ships with this stack and installs the extension.
+      # Anything else you drop in here runs once too, on an empty data volume.
+      - ./init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PGVECTOR_USER:-spinup} -d ${PGVECTOR_DB:-spinup}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+volumes:
+  pgvector-data:

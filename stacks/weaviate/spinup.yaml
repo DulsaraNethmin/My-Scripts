@@ -1,0 +1,11 @@
+name: weaviate
+description: Weaviate 1.39 vector database with REST and gRPC
+category: database
+primary: weaviate
+cli: wget -qO- http://127.0.0.1:8080/v1/schema
+url: http://localhost:${WEAVIATE_HTTP_PORT}
+ports:
+  - name: WEAVIATE_HTTP_PORT
+    default: 9080
+  - name: WEAVIATE_GRPC_PORT
+    default: 50051

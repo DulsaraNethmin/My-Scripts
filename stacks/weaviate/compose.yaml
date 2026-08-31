@@ -1,0 +1,46 @@
+name: spinup-weaviate
+
+services:
+  weaviate:
+    # No floating minor tag exists — the registry carries full patch versions
+    # and `latest`, nothing in between — so the patch is pinned.
+    image: semitechnologies/weaviate:1.39.2
+    restart: unless-stopped
+    environment:
+      AUTHENTICATION_ANONYMOUS_ACCESS_ENABLED: "true"
+      # Weaviate's own default is /data, so naming the path here is what makes
+      # the volume below the place the data actually lands. Drop this and the
+      # mount persists nothing.
+      PERSISTENCE_DATA_PATH: /var/lib/weaviate
+      # Collections that do not name a vectorizer get none, so you bring your
+      # own vectors. Every built-in vectorizer wants a third-party API key.
+      DEFAULT_VECTORIZER_MODULE: none
+      # Load-bearing. Weaviate names its raft node after the container
+      # hostname, which compose sets to the container ID. Recreate the
+      # container and the node recorded on the volume no longer exists: no
+      # leader is ever elected, every read fails with "leader not found", and
+      # /v1/.well-known/ready answers 503 forever. Do not change this value on
+      # an existing volume.
+      CLUSTER_HOSTNAME: node1
+      QUERY_DEFAULTS_LIMIT: ${WEAVIATE_QUERY_LIMIT:-25}
+    ports:
+      # 9080 on the host: Weaviate's own 8080 belongs to pgAdmin in the
+      # postgres stack, and every stack has to be able to run beside every
+      # other one.
+      - "${WEAVIATE_HTTP_PORT:-9080}:8080"
+      # gRPC, which the v4 Python and v3 TypeScript clients require.
+      - "${WEAVIATE_GRPC_PORT:-50051}:50051"
+    volumes:
+      - weaviate-data:/var/lib/weaviate
+    healthcheck:
+      # Alpine base: BusyBox wget, no curl. /v1/.well-known/ready answers 503
+      # until the raft node has a leader, so this is a real readiness gate
+      # rather than a liveness ping.
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8080/v1/.well-known/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 10s
+
+volumes:
+  weaviate-data:
