@@ -308,6 +308,23 @@ has no UI to serve, so again none of the three declares a `gui` profile.
 
 That completes the Phase 5 catalog: 25 stacks.
 
+### Added — docs (Phase 6)
+
+- README rewritten around what the project now is: the install one-liners for
+  Homebrew, Scoop and the two install scripts; a transcript of a real
+  `spinup up postgres --gui`; the full catalog as a table by category, with a
+  column saying whether the GUI is a container of its own; where files and
+  volumes live; and an FAQ covering the questions the design actually raises —
+  what deletes data, how stacks avoid each other's ports, which settings only
+  apply on a first start, and which stacks mount the Docker socket and why.
+  The old table listed eight stacks and the status note said there was nothing
+  to install.
+- `scripts/demo.sh` drives the README's sequence at a readable pace under a
+  scratch `SPINUP_HOME`, so recording the demo GIF is one command rather than
+  a performance. `SPINUP_DEMO_PORTS` rehearses it on a machine where 5432 or
+  8080 is busy. The GIF itself is not in the repository yet; the README has a
+  comment where it goes.
+
 ### Added — connect commands (Phase 4)
 
 - `spinup shell <stack> [service]` opens a shell in a running container —
