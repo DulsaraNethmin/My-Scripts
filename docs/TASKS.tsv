@@ -40,3 +40,4 @@
 6.1|Phase 6 — Docs|done|task/6.1-readme|README: install one-liner, demo GIF, stack table, FAQ
 6.2|Phase 6 — Docs|done|task/6.2-contributing|CONTRIBUTING.md, issue templates
 6.3|Phase 6 — Docs|done|task/6.3-site|Optional: mkdocs site on GitHub Pages
+6.3m|Phase 6 — Docs|manual|-|Enable GitHub Pages: Settings > Pages > Source: GitHub Actions
