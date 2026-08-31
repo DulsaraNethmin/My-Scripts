@@ -1,0 +1,50 @@
+name: spinup-mariadb
+
+services:
+  mariadb:
+    image: mariadb:11.8
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD:-spinup}
+      MARIADB_DATABASE: ${MARIADB_DATABASE:-spinup}
+      MARIADB_USER: ${MARIADB_USER:-spinup}
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD:-spinup}
+    ports:
+      # 3307 on the host: mysql already has 3306, and the two stacks have to be
+      # able to run at the same time.
+      - "${MARIADB_PORT:-3307}:3306"
+    volumes:
+      - mariadb-data:/var/lib/mysql
+      # Any .sql/.sh dropped in init/ runs once, on an empty data volume.
+      - ./init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      # Ships with the image since 10.11, and checks more than a TCP connect:
+      # --innodb_initialized is the difference between "answering" and "ready".
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  adminer:
+    image: adminer:5
+    profiles: [gui]
+    restart: unless-stopped
+    environment:
+      # The database is on this stack's own network, so the server is the
+      # service name rather than the host.
+      ADMINER_DEFAULT_SERVER: mariadb
+    ports:
+      - "${MARIADB_ADMINER_PORT:-8097}:8080"
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8080/"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 5s
+
+volumes:
+  mariadb-data:

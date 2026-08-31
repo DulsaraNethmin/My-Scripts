@@ -191,6 +191,20 @@ defaults, and GUIs on non-colliding `80xx` ports recorded in `docs/PORTS.md`.
 All three serve their web interface from the primary container, so none has a
 `gui` profile, and all three are in the CI smoke matrix.
 
+- `rabbitmq` — RabbitMQ 4 with the management UI on `8087`, AMQP on `5672`.
+  It sets a fixed `hostname:`, because RabbitMQ names its node after the
+  hostname and stores data under that name: without one, every recreate gets a
+  new container id, a new node name, and a data directory that looks empty
+  while the messages sit on the volume under a name nothing reads.
+- `nats` — NATS 2 with JetStream on and its store on a volume, plus the
+  monitoring endpoints on `8088`. The `alpine` tag rather than the default:
+  the standard image is built on scratch and has no shell or wget, which
+  leaves nothing to run a healthcheck with. It serves JSON, not a UI, so the
+  stack declares no GUI.
+- `mariadb` — MariaDB 11.8 LTS on `3307` (not `3306`; the mysql stack has
+  that, and every stack must run beside every other) with its own Adminer on
+  `8097` behind the `gui` profile.
+
 ### Added — connect commands (Phase 4)
 
 - `spinup shell <stack> [service]` opens a shell in a running container —
