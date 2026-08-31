@@ -1,0 +1,56 @@
+name: spinup-portainer
+
+services:
+  # Portainer only reads its admin password from a *file*, and the file has to
+  # exist before it starts. This one-shot writes the env-driven password into a
+  # volume the server mounts read-only, then exits.
+  portainer-init:
+    image: busybox:1.37
+    restart: "no"
+    environment:
+      PORTAINER_ADMIN_PASSWORD: ${PORTAINER_ADMIN_PASSWORD:-spinupspinup}
+    command:
+      - "sh"
+      - "-c"
+      - "printf '%s' \"$${PORTAINER_ADMIN_PASSWORD}\" > /secret/admin-password"
+    volumes:
+      - portainer-secret:/secret
+
+  portainer:
+    image: portainer/portainer-ce:2.45.0-alpine
+    restart: unless-stopped
+    # -H pre-creates the "primary" environment pointing at the mounted socket,
+    # so the UI opens on the container list instead of the setup wizard.
+    # --admin-password-file skips the "create the first user" screen, which
+    # Portainer otherwise disables five minutes after start.
+    command:
+      - "-H"
+      - "unix:///var/run/docker.sock"
+      - "--admin-password-file"
+      - "/run/secrets/admin-password"
+    ports:
+      # 9443 (HTTPS, self-signed) and 8000 (Edge agent tunnel) are deliberately
+      # not published: locally they buy nothing but a certificate warning.
+      - "${PORTAINER_PORT:-8089}:9000"
+    volumes:
+      # The whole point of the stack. On Windows the host side of this is
+      # //./pipe/docker_engine — see PORTAINER_DOCKER_SOCK in .env.example.
+      - ${PORTAINER_DOCKER_SOCK:-/var/run/docker.sock}:/var/run/docker.sock
+      - portainer-data:/data
+      - portainer-secret:/run/secrets:ro
+    depends_on:
+      portainer-init:
+        condition: service_completed_successfully
+    healthcheck:
+      # /api/system/status is public and needs no token. /api/status is the
+      # same thing deprecated. The alpine image has BusyBox wget; the default
+      # portainer-ce image has no shell to run a probe with.
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:9000/api/system/status"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 5s
+
+volumes:
+  portainer-data:
+  portainer-secret:

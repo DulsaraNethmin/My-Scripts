@@ -114,6 +114,13 @@ jobs:
           - { stack: mariadb,             profiles: "--profile gui" }
           - { stack: rabbitmq,            profiles: "" }
           - { stack: nats,                profiles: "" }
+          # Same again: Fauxton, Neo4j Browser and Portainer are all served by
+          # the primary container. couchdb and portainer each also start a
+          # one-shot setup container, which `--wait` treats as satisfied once
+          # it exits 0 and `ps` stops listing.
+          - { stack: couchdb,             profiles: "" }
+          - { stack: neo4j,               profiles: "" }
+          - { stack: portainer,           profiles: "" }
     steps:
       - uses: actions/checkout@v4
 

@@ -204,6 +204,33 @@ All three serve their web interface from the primary container, so none has a
 - `mariadb` — MariaDB 11.8 LTS on `3307` (not `3306`; the mysql stack has
   that, and every stack must run beside every other) with its own Adminer on
   `8097` behind the `gui` profile.
+- `portainer` — Portainer CE on `8089`, managing the Docker daemon through the
+  socket it mounts. Two flags do the setup for you: `-H` pre-creates the local
+  environment so the UI opens on the container list rather than the "connect
+  an environment" wizard, and `--admin-password-file` creates the admin account
+  so you never meet the first-run screen — which Portainer disables five
+  minutes after start, and which is a restart to get back. That file has to
+  exist before the server does, so a one-shot BusyBox container writes
+  `PORTAINER_ADMIN_PASSWORD` into a volume first. The default password is
+  twelve characters because that is the minimum Portainer's own form accepts.
+- `couchdb` — Apache CouchDB 3 on `5984`, with Fauxton served by the database
+  itself at `/_utils`. A stock CouchDB 3 has no `_users` or `_replicator`
+  database and nags about it on every Fauxton page, so a one-shot posts the
+  documented single-node setup once the server is healthy; it is idempotent
+  and runs on every start. The healthcheck uses `curl`, not `wget`: this image
+  is Debian-based and ships only the one.
+- `neo4j` — Neo4j 5 Community on `7687` (Bolt) with Neo4j Browser moved off
+  `7474` onto `8091`, where the rest of the catalog's GUIs live. Because
+  Browser connects to whatever Bolt address the *server* advertises, the stack
+  sets `server.bolt.advertised_address` from `NEO4J_BOLT_PORT`, so overriding
+  the port leaves the connect form correct instead of pointing at a port
+  nothing is bound to. The user is always `neo4j` — `NEO4J_AUTH` sets its
+  password and not its name — and the password needs eight characters, so the
+  default is `spinuppass` rather than the catalog's usual `spinup`.
+
+Portainer, Fauxton and Neo4j Browser are all served by their stack's primary
+container, so none of the three has a `gui` profile. All three are in the CI
+smoke matrix.
 
 ### Added — connect commands (Phase 4)
 

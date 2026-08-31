@@ -1,0 +1,15 @@
+name: neo4j
+description: Neo4j 5 Community with Neo4j Browser
+category: database
+primary: neo4j
+cli: cypher-shell -u neo4j -p ${NEO4J_PASSWORD}
+gui:
+  service: neo4j
+  url: http://localhost:${NEO4J_BROWSER_PORT}
+  login: neo4j / ${NEO4J_PASSWORD}
+url: bolt://neo4j:${NEO4J_PASSWORD}@localhost:${NEO4J_BOLT_PORT}
+ports:
+  - name: NEO4J_BOLT_PORT
+    default: 7687
+  - name: NEO4J_BROWSER_PORT
+    default: 8091
