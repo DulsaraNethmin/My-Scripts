@@ -1,0 +1,13 @@
+name: keycloak
+description: Keycloak 26 — OAuth2, OIDC and SAML — backed by Postgres
+category: tooling
+primary: keycloak
+cli: /opt/keycloak/bin/kcadm.sh
+gui:
+  service: keycloak
+  url: http://localhost:${KEYCLOAK_PORT}
+  login: ${KEYCLOAK_ADMIN} / ${KEYCLOAK_ADMIN_PASSWORD}
+url: http://localhost:${KEYCLOAK_PORT}
+ports:
+  - name: KEYCLOAK_PORT
+    default: 8096

@@ -1,0 +1,96 @@
+name: spinup-monitoring
+
+services:
+  prometheus:
+    image: prom/prometheus:v3
+    restart: unless-stopped
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+      - "--storage.tsdb.retention.time=${PROMETHEUS_RETENTION:-15d}"
+      - "--web.enable-lifecycle"
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    healthcheck:
+      # The image has no shell, curl or wget, so the probe is the promtool
+      # binary that ships beside prometheus in it.
+      test: ["CMD", "promtool", "check", "healthy", "--url", "http://127.0.0.1:9090"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 5s
+
+  # The host: CPU, memory, disk, network, load.
+  node-exporter:
+    image: prom/node-exporter:v1
+    restart: unless-stopped
+    command:
+      - "--path.procfs=/host/proc"
+      - "--path.sysfs=/host/sys"
+      - "--path.rootfs=/rootfs"
+      - "--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)"
+    pid: host
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    # Not published: Prometheus scrapes it over the stack's own network, and a
+    # host port would be one more thing to collide with.
+    expose:
+      - "9100"
+
+  # Every container on the daemon: CPU, memory, network, disk.
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.55.1
+    restart: unless-stopped
+    privileged: true
+    devices:
+      - /dev/kmsg
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      # Named explicitly as well as via /var/run, which on Docker Desktop does
+      # not carry the socket. Without it cAdvisor still reports every cgroup,
+      # but with no `name` or `image` label on any of them — and every panel
+      # that groups by container name is then empty.
+      - ${MONITORING_DOCKER_SOCK:-/var/run/docker.sock}:/var/run/docker.sock:ro
+    expose:
+      - "8080"
+
+  grafana:
+    image: grafana/grafana:13.0
+    profiles: [gui]
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-spinup}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-spinup}
+      # Nothing here should phone home or ask anyone to sign up.
+      GF_ANALYTICS_REPORTING_ENABLED: "false"
+      GF_ANALYTICS_CHECK_FOR_UPDATES: "false"
+      GF_USERS_ALLOW_SIGN_UP: "false"
+    ports:
+      - "${GRAFANA_PORT:-8095}:3000"
+    volumes:
+      # The data source and the dashboard provider, read at startup.
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      # Every .json in here becomes a dashboard; drop one in and it appears.
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      prometheus:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:3000/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+volumes:
+  prometheus-data:
+  grafana-data:

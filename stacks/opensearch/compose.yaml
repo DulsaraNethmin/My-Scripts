@@ -1,0 +1,63 @@
+name: spinup-opensearch
+
+services:
+  opensearch:
+    image: opensearchproject/opensearch:3
+    restart: unless-stopped
+    environment:
+      discovery.type: single-node
+      cluster.name: ${OPENSEARCH_CLUSTER_NAME:-spinup}
+      node.name: opensearch
+      # Off by default here: with it on, 9200 is HTTPS with a self-signed
+      # certificate and every curl needs -k. See the README — this is a
+      # deliberate local-only trade.
+      DISABLE_SECURITY_PLUGIN: "true"
+      DISABLE_INSTALL_DEMO_CONFIG: "true"
+      # The JVM otherwise sizes itself from the host's RAM and asks for a
+      # quarter of it.
+      OPENSEARCH_JAVA_OPTS: -Xms${OPENSEARCH_HEAP:-512m} -Xmx${OPENSEARCH_HEAP:-512m}
+      bootstrap.memory_lock: "true"
+    ulimits:
+      # memory_lock above needs an unlimited memlock, and Lucene opens a lot
+      # of files.
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    ports:
+      - "${OPENSEARCH_PORT:-9200}:9200"
+    volumes:
+      - opensearch-data:/usr/share/opensearch/data
+    healthcheck:
+      # The cluster's own health endpoint. Yellow is the expected colour for a
+      # single node — every index asks for a replica it has nowhere to put —
+      # so this deliberately does not require green.
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:9200/_cluster/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+
+  dashboards:
+    image: opensearchproject/opensearch-dashboards:3
+    profiles: [gui]
+    restart: unless-stopped
+    environment:
+      OPENSEARCH_HOSTS: '["http://opensearch:9200"]'
+      DISABLE_SECURITY_DASHBOARDS_PLUGIN: "true"
+    ports:
+      - "${OPENSEARCH_DASHBOARDS_PORT:-8094}:5601"
+    depends_on:
+      opensearch:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:5601/api/status"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 30s
+
+volumes:
+  opensearch-data:

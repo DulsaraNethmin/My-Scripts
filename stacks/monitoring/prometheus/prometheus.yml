@@ -1,0 +1,21 @@
+# Scrape config for the spinup monitoring stack. Targets are service names on
+# the stack's own network, so nothing here depends on published ports.
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets: ["127.0.0.1:9090"]
+
+  # The host the containers run on: CPU, memory, disk, network, load.
+  - job_name: node
+    static_configs:
+      - targets: ["node-exporter:9100"]
+
+  # Per-container CPU, memory, network and disk, for every container on the
+  # daemon — not only this stack's.
+  - job_name: cadvisor
+    static_configs:
+      - targets: ["cadvisor:8080"]

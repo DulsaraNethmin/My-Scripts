@@ -1,0 +1,12 @@
+# Provisioned at startup, so Grafana opens with the data source already there.
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    # Fixed uid so the provisioned dashboard can name it.
+    uid: spinup-prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    editable: true

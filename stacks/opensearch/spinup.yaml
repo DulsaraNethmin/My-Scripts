@@ -1,0 +1,16 @@
+name: opensearch
+description: OpenSearch 3 with OpenSearch Dashboards
+category: database
+primary: opensearch
+cli: curl -s http://127.0.0.1:9200/_cat/indices?v
+gui:
+  service: dashboards
+  url: http://localhost:${OPENSEARCH_DASHBOARDS_PORT}
+  login: none
+url: http://localhost:${OPENSEARCH_PORT}
+ports:
+  - name: OPENSEARCH_PORT
+    default: 9200
+  - name: OPENSEARCH_DASHBOARDS_PORT
+    default: 8094
+profiles: [gui]
