@@ -1,0 +1,16 @@
+name: mariadb
+description: MariaDB 11.8 LTS with Adminer
+category: database
+primary: mariadb
+cli: mariadb -u${MARIADB_USER} -p${MARIADB_PASSWORD} ${MARIADB_DATABASE}
+gui:
+  service: adminer
+  url: http://localhost:${MARIADB_ADMINER_PORT}
+  login: ${MARIADB_USER} / ${MARIADB_PASSWORD}
+url: mysql://${MARIADB_USER}:${MARIADB_PASSWORD}@localhost:${MARIADB_PORT}/${MARIADB_DATABASE}
+ports:
+  - name: MARIADB_PORT
+    default: 3307
+  - name: MARIADB_ADMINER_PORT
+    default: 8097
+profiles: [gui]

@@ -1,0 +1,29 @@
+name: spinup-nats
+
+services:
+  nats:
+    image: nats:2-alpine
+    restart: unless-stopped
+    # -js turns on JetStream (streams, key-value, object store), --store_dir
+    # puts it on the volume, -m serves the monitoring endpoints.
+    command:
+      - "-js"
+      - "--store_dir=/data"
+      - "-m"
+      - "8222"
+    ports:
+      - "${NATS_PORT:-4222}:4222"
+      - "${NATS_MONITOR_PORT:-8088}:8222"
+    volumes:
+      - nats-data:/data
+    healthcheck:
+      # /healthz is the endpoint NATS documents for exactly this; the alpine
+      # image has BusyBox wget, the default image has no shell at all.
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8222/healthz"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 5s
+
+volumes:
+  nats-data:

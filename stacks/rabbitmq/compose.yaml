@@ -1,0 +1,28 @@
+name: spinup-rabbitmq
+
+services:
+  rabbitmq:
+    image: rabbitmq:4-management-alpine
+    restart: unless-stopped
+    # RabbitMQ names its node after the hostname and keeps its data under that
+    # name. Without a fixed one, every recreate gets a new container id, a new
+    # node name, and a data directory that looks empty.
+    hostname: spinup-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-spinup}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-spinup}
+      RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_VHOST:-/}
+    ports:
+      - "${RABBITMQ_PORT:-5672}:5672"
+      - "${RABBITMQ_MANAGEMENT_PORT:-8087}:15672"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+
+volumes:
+  rabbitmq-data:

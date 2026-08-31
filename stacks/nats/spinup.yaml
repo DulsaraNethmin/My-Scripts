@@ -1,0 +1,10 @@
+name: nats
+description: NATS 2 with JetStream and the monitoring endpoints
+category: messaging
+primary: nats
+url: nats://localhost:${NATS_PORT}
+ports:
+  - name: NATS_PORT
+    default: 4222
+  - name: NATS_MONITOR_PORT
+    default: 8088

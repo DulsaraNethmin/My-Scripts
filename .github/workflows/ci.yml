@@ -111,6 +111,9 @@ jobs:
           - { stack: mailpit,             profiles: "" }
           - { stack: minio,               profiles: "" }
           - { stack: adminer,             profiles: "" }
+          - { stack: mariadb,             profiles: "--profile gui" }
+          - { stack: rabbitmq,            profiles: "" }
+          - { stack: nats,                profiles: "" }
     steps:
       - uses: actions/checkout@v4
 

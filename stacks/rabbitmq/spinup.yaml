@@ -1,0 +1,15 @@
+name: rabbitmq
+description: RabbitMQ 4 with the management UI
+category: messaging
+primary: rabbitmq
+cli: rabbitmqctl list_queues
+gui:
+  service: rabbitmq
+  url: http://localhost:${RABBITMQ_MANAGEMENT_PORT}
+  login: ${RABBITMQ_USER} / ${RABBITMQ_PASSWORD}
+url: amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@localhost:${RABBITMQ_PORT}/
+ports:
+  - name: RABBITMQ_PORT
+    default: 5672
+  - name: RABBITMQ_MANAGEMENT_PORT
+    default: 8087
