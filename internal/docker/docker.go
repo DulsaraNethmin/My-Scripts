@@ -9,9 +9,11 @@ package docker
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os/exec"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -131,6 +133,62 @@ func (c *Client) ComposeVersion(ctx context.Context) (string, error) {
 			ErrComposeMissing, v)
 	}
 	return v, nil
+}
+
+// SupportsWaitTimeout reports whether `docker compose up` has --wait-timeout,
+// which `spinup up` passes on every run. Asking the CLI rather than comparing
+// version numbers: the flag arrived in a v2 minor release, and a wrong constant
+// here would be a check that lies in both directions.
+func (c *Client) SupportsWaitTimeout(ctx context.Context) bool {
+	out, err := c.run(ctx, "compose", "up", "--help")
+	if err != nil {
+		return true // if it cannot be asked, do not invent a problem
+	}
+	return strings.Contains(out, "--wait-timeout")
+}
+
+// Runtimes returns the container runtimes the daemon knows about. The one that
+// matters to spinup is nvidia: without it, the pytorch stack's gpu profile
+// starts a container that cannot see the card.
+func (c *Client) Runtimes(ctx context.Context) ([]string, error) {
+	out, err := c.run(ctx, "info", "--format", "{{json .Runtimes}}")
+	if err != nil {
+		return nil, err
+	}
+
+	// The value is a map of name -> runtime object; only the names matter.
+	var runtimes map[string]any
+	if err := json.Unmarshal([]byte(out), &runtimes); err != nil {
+		return nil, fmt.Errorf("reading docker runtimes: %w", err)
+	}
+
+	names := make([]string, 0, len(runtimes))
+	for name := range runtimes {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	return names, nil
+}
+
+// HasNVIDIARuntime reports whether the daemon can run GPU containers.
+func (c *Client) HasNVIDIARuntime(ctx context.Context) (bool, error) {
+	runtimes, err := c.Runtimes(ctx)
+	if err != nil {
+		return false, err
+	}
+	for _, r := range runtimes {
+		if strings.Contains(r, "nvidia") {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+// HasNVIDIADriver reports whether the machine has an NVIDIA driver installed,
+// which is what tells "no GPU here" apart from "a GPU docker cannot use".
+func HasNVIDIADriver() bool {
+	_, err := exec.LookPath("nvidia-smi")
+	return err == nil
 }
 
 // majorVersion reads the leading number of a version string, which may be
