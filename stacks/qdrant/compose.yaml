@@ -1,0 +1,42 @@
+name: spinup-qdrant
+
+services:
+  qdrant:
+    image: qdrant/qdrant:v1.19
+    restart: unless-stopped
+    environment:
+      # Double underscores are Qdrant's env spelling of a nested config key:
+      # this is service.api_key in config.yaml. Blank it and Qdrant logs
+      # "api_key is set but empty, it is treated as unset" and stops checking,
+      # which is the supported way to turn authentication off.
+      QDRANT__SERVICE__API_KEY: ${QDRANT_API_KEY:-spinup}
+    ports:
+      # The web dashboard is served by Qdrant itself at /dashboard on this
+      # port. It is not a second container, so there is no gui profile.
+      - "${QDRANT_HTTP_PORT:-6333}:6333"
+      # gRPC, which the official clients prefer for batch upserts and search.
+      - "${QDRANT_GRPC_PORT:-6334}:6334"
+    volumes:
+      - qdrant-storage:/qdrant/storage
+      # Snapshots default to ./snapshots, a sibling of ./storage rather than a
+      # child, so without a volume of their own every backup dies with the
+      # container.
+      - qdrant-snapshots:/qdrant/snapshots
+    healthcheck:
+      # The image is Debian-based but ships neither curl nor wget, so the probe
+      # is bash's own /dev/tcp, as in stacks/keycloak. CMD-SHELL would run it
+      # under dash, which has no /dev/tcp, hence bash by name. /readyz stays
+      # reachable without the api key, so this works with auth on or off.
+      test:
+        - "CMD"
+        - "bash"
+        - "-c"
+        - "exec 3<>/dev/tcp/127.0.0.1/6333; printf 'GET /readyz HTTP/1.1\r\nHost: 127.0.0.1\r\nConnection: close\r\n\r\n' >&3; grep -q '200 OK' <&3"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+volumes:
+  qdrant-storage:
+  qdrant-snapshots:
