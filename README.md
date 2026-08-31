@@ -234,8 +234,9 @@ it. `destroy` is the only command that deletes it, and it asks first.
 That is the point of the port table. Every stack keeps its native port where it
 is free and puts its GUI in the `80xx` range, and where two want the same number
 the newer one moves — `mariadb` is on 3307, `clickhouse`'s native protocol on
-9001. `spin doctor` reports collisions with things already on your machine,
-and `--port NAME=n` overrides one for a single run.
+9001. `spin up` refuses before it starts anything when a port it needs is
+taken, and names the container holding it; `--port NAME=n` overrides one for a
+single run, and `spin env <stack> --edit` changes it for good.
 
 **How do I change a port or a password?**
 `spin env <stack>` prints what a stack will start with; `spin env <stack>

@@ -42,3 +42,4 @@
 6.3|Phase 6 — Docs|done|task/6.3-site|Optional: mkdocs site on GitHub Pages
 6.3m|Phase 6 — Docs|done|-|Enable GitHub Pages: Settings > Pages > Source: GitHub Actions
 7.1|Phase 7 — Polish|done|task/7.1-spin-alias|spin as the primary command, spinup kept as an alias
+7.2|Phase 7 — Polish|done|task/7.2-port-preflight|spin up checks host ports before starting, and names the holder

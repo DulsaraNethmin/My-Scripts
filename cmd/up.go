@@ -13,6 +13,7 @@ import (
 
 	"github.com/DulsaraNethmin/spinup/internal/catalog"
 	"github.com/DulsaraNethmin/spinup/internal/compose"
+	"github.com/DulsaraNethmin/spinup/internal/docker"
 	"github.com/DulsaraNethmin/spinup/internal/ui"
 )
 
@@ -64,6 +65,11 @@ func newUpCmd() *cobra.Command {
 
 				runner := compose.New(out, cmd.ErrOrStderr())
 				runner.Env = overrides
+
+				if err := portPreflight(ctx, p, runner); err != nil {
+					return err
+				}
+
 				err = runner.Up(ctx, p.project, compose.UpOptions{
 					Wait:    !noWait,
 					Timeout: timeout,
@@ -222,4 +228,79 @@ func serviceIsRunning(containers []compose.Container, service string) bool {
 		}
 	}
 	return false
+}
+
+// portPreflight refuses a start that would fail on an allocated host port, and
+// says which port and what holds it.
+//
+// Without it the user gets compose's own failure: a daemon error about
+// "programming external connectivity", printed twice, with the port buried in
+// it and no hint of what to do. docs/PLAN.md has promised this check since the
+// first draft.
+//
+// It never invents a failure. Anything it cannot resolve — compose declining to
+// render the config, a port it cannot decide about — falls through to the real
+// `up`, which produces the error it always did.
+func portPreflight(ctx context.Context, p *prepared, runner *compose.Runner) error {
+	wanted, err := runner.HostPorts(ctx, p.project)
+	if err != nil || len(wanted) == 0 {
+		return nil
+	}
+
+	ports := make([]int, 0, len(wanted))
+	for _, w := range wanted {
+		ports = append(ports, w.Port)
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, dockerTimeout)
+	defer cancel()
+
+	conflicts := docker.New().PortConflicts(ctx, ports, p.project.Name())
+	if len(conflicts) == 0 {
+		return nil
+	}
+
+	// The port's env var is what the user needs to change, so map back to it
+	// from the number compose gave us.
+	names := make(map[int]string, len(p.stack.Ports))
+	for _, port := range p.stack.Ports {
+		names[p.env.Int(port.Name, port.Default)] = port.Name
+	}
+
+	held := func(c docker.Conflict) string {
+		if c.Holder == "" {
+			return fmt.Sprintf("%d — in use", c.Port)
+		}
+		return fmt.Sprintf("%d — %s", c.Port, c.Holder)
+	}
+
+	// One override flag per conflict, so the suggested command fixes the whole
+	// start rather than the first port and then failing on the second.
+	var flags []string
+	for _, c := range conflicts {
+		if name, ok := names[c.Port]; ok {
+			flags = append(flags, fmt.Sprintf("--port %s=%d", name, c.Port+1))
+		}
+	}
+
+	var b strings.Builder
+	if len(conflicts) == 1 {
+		c := conflicts[0]
+		if c.Holder == "" {
+			fmt.Fprintf(&b, "%s needs port %d, which is already in use", p.stack.Name, c.Port)
+		} else {
+			fmt.Fprintf(&b, "%s needs port %d, which %s is using", p.stack.Name, c.Port, c.Holder)
+		}
+	} else {
+		fmt.Fprintf(&b, "%s needs %d ports that are already in use:", p.stack.Name, len(conflicts))
+		for _, c := range conflicts {
+			fmt.Fprintf(&b, "\n  %s", held(c))
+		}
+	}
+	if len(flags) > 0 {
+		fmt.Fprintf(&b, "\n\n  start it elsewhere:  spin up %s %s"+
+			"\n  or change it for good:  spin env %s --edit",
+			p.stack.Name, strings.Join(flags, " "), p.stack.Name)
+	}
+	return failf(ExitUsage, "%s", b.String())
 }
