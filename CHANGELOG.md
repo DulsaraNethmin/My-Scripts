@@ -7,7 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-Nothing yet.
+### Fixed
+
+- The Homebrew cask unquarantines the binary in `preflight`, not `postflight`.
+  Homebrew installs cask artifacts in a fixed order — preflight, binary,
+  generated completions, postflight — so `generate_completions_from_executable`
+  ran the freshly downloaded binary while it was still quarantined. Gatekeeper
+  blocked that exec during `brew install` itself, showing "spinup Not Opened",
+  and the postflight strip never ran. Until a release carries the fix, clear it
+  by hand:
+
+  ```sh
+  xattr -dr com.apple.quarantine "$(readlink -f "$(command -v spinup)")"
+  ```
 
 ## [1.1.0] - 2026-08-31
 
