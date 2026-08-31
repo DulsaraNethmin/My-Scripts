@@ -1,0 +1,14 @@
+name: qdrant
+description: Qdrant 1.19 vector database with its built-in web dashboard
+category: database
+primary: qdrant
+gui:
+  service: qdrant
+  url: http://localhost:${QDRANT_HTTP_PORT}/dashboard
+  login: api key ${QDRANT_API_KEY}
+url: http://localhost:${QDRANT_HTTP_PORT}
+ports:
+  - name: QDRANT_HTTP_PORT
+    default: 6333
+  - name: QDRANT_GRPC_PORT
+    default: 6334

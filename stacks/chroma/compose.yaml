@@ -1,0 +1,34 @@
+name: spinup-chroma
+
+services:
+  chroma:
+    image: chromadb/chroma:1.5.9
+    restart: unless-stopped
+    # No `command:` on purpose. The image's own is `run /config.yaml`, and that
+    # config binds 0.0.0.0. Plain `chroma run` defaults --host to localhost,
+    # which binds loopback inside the container and makes the published port
+    # answer nothing at all.
+    ports:
+      - "${CHROMA_PORT:-8000}:8000"
+    volumes:
+      # /config.yaml, baked into the image, sets persist_path to /data. The
+      # whole database is chroma.sqlite3 plus one directory per index.
+      - chroma-data:/data
+    healthcheck:
+      # Chroma 1.5 is a Rust binary on a Debian base with no curl, no wget and
+      # not even python, so the probe is bash's own /dev/tcp, as in
+      # stacks/keycloak. CMD-SHELL would run it under dash, which has no
+      # /dev/tcp, hence bash by name. v2 is the only API this release serves —
+      # /api/v1/heartbeat answers 410 Gone.
+      test:
+        - "CMD"
+        - "bash"
+        - "-c"
+        - "exec 3<>/dev/tcp/127.0.0.1/8000; printf 'GET /api/v2/heartbeat HTTP/1.1\r\nHost: 127.0.0.1\r\nConnection: close\r\n\r\n' >&3; grep -q '200 OK' <&3"
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+volumes:
+  chroma-data:

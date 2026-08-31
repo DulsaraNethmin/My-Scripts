@@ -25,20 +25,26 @@ Conventions:
 | `4222`  | nats                  | NATS client                 |
 | `4566`  | localstack            | edge / all AWS services     |
 | `5432`  | postgres              | PostgreSQL                  |
+| `5433`  | pgvector              | PostgreSQL (offset, postgres has 5432) |
 | `5672`  | rabbitmq              | AMQP                        |
 | `5984`  | couchdb               | HTTP API (+ `/_utils` GUI)  |
 | `6006`  | pytorch               | TensorBoard                 |
+| `6333`  | qdrant                | REST API + `/dashboard`     |
+| `6334`  | qdrant                | gRPC                        |
 | `6379`  | redis                 | Redis                       |
 | `7687`  | neo4j                 | Bolt                        |
+| `8000`  | chroma                | HTTP API                    |
 | `8123`  | clickhouse            | HTTP                        |
 | `8200`  | vault                 | HTTP API + built-in UI      |
 | `8888`  | pytorch               | Jupyter                     |
 | `9000`  | minio                 | S3 API                      |
 | `9001`  | clickhouse            | native protocol (9000 taken)|
+| `9080`  | weaviate              | REST/GraphQL (8080 is pgAdmin's) |
 | `9090`  | monitoring            | Prometheus                  |
 | `9092`  | kafka                 | broker                      |
 | `9200`  | opensearch            | REST API                    |
 | `27017` | mongodb               | MongoDB                     |
+| `50051` | weaviate              | gRPC                        |
 
 ## Web GUIs (`80xx`)
 
@@ -80,3 +86,12 @@ alongside another stack that binds 80.
 because that is where the free numbers are. Routed URLs therefore carry the
 port (`http://whoami.localhost:8098`), which is the price of the two proxy
 stacks being able to run at the same time.
+
+`weaviate` binds `9080` rather than its own `8080`, which pgAdmin has in the
+`postgres` stack, and `50051` for gRPC. Both have to be passed to clients
+explicitly, because `weaviate.connect_to_local()` assumes `8080`/`50051`.
+`50051` is the canonical gRPC port and so the likeliest default in this table
+to collide with something outside spinup; `WEAVIATE_GRPC_PORT` moves it.
+
+`pgvector` is a second PostgreSQL and cannot have `5432`, so it takes `5433` —
+the same offset-with-a-reason as `mariadb` on `3307`.

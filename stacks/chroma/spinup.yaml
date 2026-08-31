@@ -1,0 +1,8 @@
+name: chroma
+description: Chroma 1.5 vector database, HTTP API only
+category: database
+primary: chroma
+url: http://localhost:${CHROMA_PORT}
+ports:
+  - name: CHROMA_PORT
+    default: 8000

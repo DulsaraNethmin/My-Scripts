@@ -43,6 +43,6 @@
 6.3m|Phase 6 — Docs|done|-|Enable GitHub Pages: Settings > Pages > Source: GitHub Actions
 7.1|Phase 7 — Polish|done|task/7.1-spin-alias|spin as the primary command, spinup kept as an alias
 7.2|Phase 7 — Polish|done|task/7.2-port-preflight|spin up checks host ports before starting, and names the holder
-8.1|Phase 8 — Catalog v3|todo|task/8.1-stacks-vector-a|stacks: qdrant, chroma (+ docs/PORTS.md claims for all four)
+8.1|Phase 8 — Catalog v3|wip|task/8.1-stacks-vector-a|stacks: qdrant, chroma (+ docs/PORTS.md claims for all four)
 8.2|Phase 8 — Catalog v3|todo|task/8.2-stacks-vector-b|stacks: pgvector (init CREATE EXTENSION), weaviate (CLUSTER_HOSTNAME)
 8.3|Phase 8 — Catalog v3|todo|task/8.3-catalog-docs|README catalog tables, mkdocs nav, stale 25-stack counts
