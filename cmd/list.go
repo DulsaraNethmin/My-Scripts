@@ -2,7 +2,9 @@ package cmd
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"io"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -14,7 +16,10 @@ import (
 )
 
 func newListCmd() *cobra.Command {
-	var quiet bool
+	var (
+		quiet  bool
+		asJSON bool
+	)
 
 	cmd := &cobra.Command{
 		Use:     "list",
@@ -51,13 +56,17 @@ func newListCmd() *cobra.Command {
 			// here only costs the status column.
 			running := runningStacks(ctx)
 
+			if asJSON {
+				return writeJSON(out, stacksJSON(cat, stacks, running))
+			}
+
 			table := ui.NewTable("stack", "category", "status", "ports", "description")
 			for _, s := range stacks {
 				table.Row(
 					s.Name,
 					string(s.Category),
 					statusCell(running, s.Name),
-					strings.Join(stackPorts(s), ", "),
+					strings.Join(stackPorts(cat, s), ", "),
 					s.Description,
 				)
 			}
@@ -68,8 +77,89 @@ func newListCmd() *cobra.Command {
 	}
 
 	cmd.Flags().BoolVarP(&quiet, "quiet", "q", false, "print only the stack names")
+	cmd.Flags().BoolVar(&asJSON, "json", false, "print the catalog as JSON")
+	cmd.MarkFlagsMutuallyExclusive("quiet", "json")
 
 	return cmd
+}
+
+// stackJSON is `spinup list --json`. It is an interface other programs read,
+// so the fields are the ones a script would otherwise parse out of the table —
+// and the ports are resolved, not the defaults, because a script that connects
+// to the default port when the user has changed it is worse than no script.
+type stackJSON struct {
+	Name        string         `json:"name"`
+	Description string         `json:"description"`
+	Category    string         `json:"category"`
+	Origin      string         `json:"origin"`
+	Running     bool           `json:"running"`
+	Status      string         `json:"status,omitempty"`
+	Ports       map[string]int `json:"ports"`
+	URL         string         `json:"url,omitempty"`
+	GUI         string         `json:"gui,omitempty"`
+	Profiles    []string       `json:"profiles,omitempty"`
+}
+
+func stacksJSON(cat *catalog.Catalog, stacks []*catalog.Stack, running map[string]string) []stackJSON {
+	out := make([]stackJSON, 0, len(stacks))
+
+	for _, s := range stacks {
+		env := stackEnv(cat, s)
+
+		ports := make(map[string]int, len(s.Ports))
+		for _, p := range s.Ports {
+			ports[p.Name] = env.Int(p.Name, p.Default)
+		}
+
+		status := running[s.Name]
+		row := stackJSON{
+			Name:        s.Name,
+			Description: s.Description,
+			Category:    string(s.Category),
+			Origin:      string(s.Origin),
+			Running:     strings.Contains(status, "running"),
+			Status:      status,
+			Ports:       ports,
+			URL:         catalog.Expand(s.URL, env),
+			Profiles:    s.Profiles,
+		}
+		if s.HasGUI() {
+			row.GUI = catalog.Expand(s.GUI.URL, env)
+		}
+		out = append(out, row)
+	}
+	return out
+}
+
+// writeJSON prints a value as indented JSON with a trailing newline, which is
+// what a terminal and a pipe both want.
+func writeJSON(out io.Writer, v any) error {
+	enc := json.NewEncoder(out)
+	enc.SetIndent("", "  ")
+	return enc.Encode(v)
+}
+
+// stackEnv resolves a stack's environment for display, the same way `up`
+// resolves it — including the stack's own .env.example, which is where the
+// credentials in a connection string come from before a stack has ever been
+// started. Anything unreadable leaves the display falling back to defaults
+// rather than failing the command.
+func stackEnv(cat *catalog.Catalog, s *catalog.Stack) config.Env {
+	paths, err := config.DefaultPaths()
+	if err != nil {
+		return config.Env{}
+	}
+
+	example, err := cat.ReadFile(s.Name, catalog.EnvExample)
+	if err != nil {
+		example = nil
+	}
+
+	env, err := config.ResolveEnv(s, example, paths.EnvFile(s.Name))
+	if err != nil {
+		return config.Env{}
+	}
+	return env
 }
 
 // runningStacks maps stack name to compose's status string. One `compose ls`
@@ -103,13 +193,8 @@ func statusCell(running map[string]string, name string) string {
 
 // stackPorts is the host ports a stack will bind, resolved the same way `up`
 // resolves them, so what list shows is what compose will publish.
-func stackPorts(s *catalog.Stack) []string {
-	env := config.Env{}
-	if paths, err := config.DefaultPaths(); err == nil {
-		if resolved, err := config.ResolveEnv(s, nil, paths.EnvFile(s.Name)); err == nil {
-			env = resolved
-		}
-	}
+func stackPorts(cat *catalog.Catalog, s *catalog.Stack) []string {
+	env := stackEnv(cat, s)
 
 	ports := make([]string, 0, len(s.Ports))
 	for _, p := range s.Ports {
