@@ -18,7 +18,10 @@ other one.
 > repository is the successor to `My-Scripts` and is still named that on
 > GitHub, so the URLs below will not resolve until it is renamed.
 >
-> Progress: `make status`. Design: [`docs/PLAN.md`](docs/PLAN.md).
+> Progress: `make status`. Design: [`docs/PLAN.md`](docs/PLAN.md). The same
+> docs are a site — `make docs-serve` locally, and at
+> <https://dulsaranethmin.github.io/spinup/> once the repository is renamed and
+> Pages is switched on.
 
 ## What it looks like
 
@@ -280,6 +283,7 @@ profile and when it does not, and what a stack has to do before it is done.
 make stacks-lint       # the structural rules
 make stacks-validate   # docker compose config on every stack
 make check             # what CI runs
+make docs-serve        # the docs site, including your stack's page
 ```
 
 CI additionally brings the light stacks up and waits for them to report

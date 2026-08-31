@@ -336,6 +336,16 @@ That completes the Phase 5 catalog: 25 stacks.
 - Issue templates for a bug report and a stack request, a PR template whose
   checklist is the stack acceptance criteria, and links from the issue chooser
   to the design and the port registry.
+- A documentation site (Material for MkDocs) published to GitHub Pages, with a
+  page per stack. `scripts/build-docs.sh` assembles it from the markdown
+  already in the repository — README, CONTRIBUTING, `docs/` and every stack's
+  own README — rewriting the relative links, so the site is not a second copy
+  of anything to keep in step. The catalog index is generated from each
+  stack's `spinup.yaml`, so it cannot drift from what the CLI reads.
+  `mkdocs build --strict` turns a link the assembler does not know about into
+  a failed build, and the workflow runs it on pull requests too, where it
+  publishes nothing. Enabling Pages (Settings → Pages → Source: GitHub
+  Actions) is a one-time manual step. `make docs` and `make docs-serve`.
 
 ### Added — connect commands (Phase 4)
 

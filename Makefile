@@ -17,7 +17,8 @@ HAS_GO_CODE := $(wildcard main.go)
 .DEFAULT_GOAL := help
 .PHONY: help status tasks next start done todo handoff build install run clean \
         test test-unit test-integration lint vet fmt tidy stacks-validate \
-        stacks-lint stacks-list doctor snapshot release-check merge check
+        stacks-lint stacks-list doctor snapshot release-check merge check \
+        docs docs-serve
 
 ## ---------------------------------------------------------------- help
 
@@ -183,6 +184,23 @@ snapshot: ## Local GoReleaser snapshot build — all six targets into dist/, no 
 	  && goreleaser release --snapshot --clean --skip=sign \
 	  || echo "goreleaser not installed — brew install goreleaser"
 
+# ---------------------------------------------------------------- docs
+
+# The site is assembled from the markdown already in the repository, so there
+# is no second copy of anything to keep in step. Needs mkdocs-material:
+# pip install -r docs/requirements.txt (a virtualenv is the usual place).
+docs: ## Build the documentation site into build/site
+	@./scripts/build-docs.sh
+	@command -v mkdocs >/dev/null 2>&1 \
+	  && mkdocs build --strict \
+	  || echo "mkdocs not installed — pip install -r docs/requirements.txt"
+
+docs-serve: ## Build the site and serve it at http://localhost:8000
+	@./scripts/build-docs.sh
+	@command -v mkdocs >/dev/null 2>&1 \
+	  && mkdocs serve \
+	  || echo "mkdocs not installed — pip install -r docs/requirements.txt"
+
 clean: ## Remove build artefacts
-	@rm -rf $(BIN_DIR) dist
+	@rm -rf $(BIN_DIR) dist build
 	@echo "cleaned"
