@@ -1,0 +1,12 @@
+name: adminer
+description: Adminer — one PHP page that administers every database you run
+category: tooling
+primary: adminer
+gui:
+  service: adminer
+  url: http://localhost:${ADMINER_PORT}
+  login: the database's own credentials
+url: http://localhost:${ADMINER_PORT}
+ports:
+  - name: ADMINER_PORT
+    default: 8084

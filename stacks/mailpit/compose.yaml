@@ -1,0 +1,32 @@
+name: spinup-mailpit
+
+services:
+  mailpit:
+    image: axllent/mailpit:v1.31
+    restart: unless-stopped
+    environment:
+      # Without a database Mailpit keeps every message in memory and forgets
+      # them on restart. /data is the named volume below.
+      MP_DATABASE: /data/mailpit.db
+      MP_MAX_MESSAGES: ${MAILPIT_MAX_MESSAGES:-5000}
+      # Accept whatever credentials an app sends, over an unencrypted
+      # connection: a local mail catcher exists to be pointed at, and half the
+      # frameworks in the world refuse to send without an auth mechanism.
+      MP_SMTP_AUTH_ACCEPT_ANY: ${MAILPIT_ACCEPT_ANY_AUTH:-true}
+      MP_SMTP_AUTH_ALLOW_INSECURE: ${MAILPIT_ALLOW_INSECURE_AUTH:-true}
+    ports:
+      - "${MAILPIT_SMTP_PORT:-1025}:1025"
+      - "${MAILPIT_UI_PORT:-8085}:8025"
+    volumes:
+      - mailpit-data:/data
+    healthcheck:
+      # The image's own probe, and the only one that does not need a shell:
+      # this image has no wget or curl.
+      test: ["CMD", "/mailpit", "readyz"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 5s
+
+volumes:
+  mailpit-data:
