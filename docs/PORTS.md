@@ -62,6 +62,7 @@ Conventions:
 | `8095` | monitoring            | Grafana              |
 | `8096` | keycloak              | admin console        |
 | `8097` | mariadb               | Adminer (stack-local)|
+| `8098` | traefik               | `web` entrypoint     |
 | `8099` | *(scaffold)*          | `spinup new` default |
 
 ## Exceptions
@@ -73,3 +74,9 @@ built-in one on its first `spinup up`.
 `nginx-proxy-manager` binds `80`, `443` and `81` by design — it *is* the edge
 proxy. It is the one stack that expects to own port 80, and it cannot run
 alongside another stack that binds 80.
+
+`traefik` is the other proxy, and it does *not* take 80 for that reason: its
+`web` entrypoint is on `8098`, in the GUI range even though it is not a GUI,
+because that is where the free numbers are. Routed URLs therefore carry the
+port (`http://whoami.localhost:8098`), which is the price of the two proxy
+stacks being able to run at the same time.

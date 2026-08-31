@@ -126,6 +126,10 @@ jobs:
           - { stack: clickhouse,          profiles: "" }
           - { stack: localstack,          profiles: "" }
           - { stack: vault,               profiles: "" }
+          # traefik's dashboard is its own; kafka-ui is a container of its own
+          # and so goes behind the gui profile like the other separate GUIs.
+          - { stack: traefik,             profiles: "" }
+          - { stack: kafka,               profiles: "--profile gui" }
     steps:
       - uses: actions/checkout@v4
 

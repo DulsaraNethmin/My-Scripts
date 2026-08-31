@@ -258,6 +258,26 @@ smoke matrix.
 Play and Vault's UI are served by their primary container too, and localstack
 has no UI to serve, so again none of the three declares a `gui` profile.
 
+- `traefik` — Traefik v3, routing to containers by label, with its dashboard
+  on `8092`. Its `web` entrypoint is on `8098` rather than `80`: the
+  `nginx-proxy-manager` stack owns 80 in this catalog and binding it needs
+  root on Linux, so routed URLs carry the port. The socket is mounted
+  read-only — Traefik only reads labels, and a proxy that can start containers
+  is a different thing. The stack ships a 4 MB `whoami` published nowhere, so
+  that `spinup up traefik` proves the proxy works rather than showing an empty
+  routing table.
+- `kafka` — Apache Kafka 4 in KRaft mode, one container and no ZooKeeper, with
+  kafka-ui behind the `gui` profile on `8093`. Two client listeners, because a
+  broker hands every client the address to reconnect on and the right answer
+  differs by where the client is: containers on the stack network are told
+  `kafka:9092`, anything on your machine is told `localhost:9092`, and
+  overriding `KAFKA_PORT` moves the advertised address with it. Every
+  replication factor is pinned to 1 — one node cannot replicate anywhere, and
+  the built-in topics default to asking for three copies, which leaves the
+  broker up but unable to create a consumer group. kafka-ui is kafbat's fork;
+  the `provectuslabs` image most search results point at has had no release
+  since 2023.
+
 ### Added — connect commands (Phase 4)
 
 - `spinup shell <stack> [service]` opens a shell in a running container —
