@@ -11,14 +11,8 @@ No cloning, no editing YAML, no remembering ports and passwords. **25 stacks**,
 each pinned to a real version, healthchecked, and able to run beside every
 other one.
 
-> **Status: in development.** The catalog and the CLI are complete; the first
-> release is not tagged yet, so the install commands below start working once
-> it is. Until then, [build it from source](#from-source) or use the stacks
-> directly with `docker compose` — both work, and both will keep working.
->
-> Progress: `make status`. Design: [`docs/PLAN.md`](docs/PLAN.md). The same
-> docs are a site — `make docs-serve` locally, and at
-> <https://dulsaranethmin.github.io/spinup/> once Pages is switched on.
+> Design: [`docs/PLAN.md`](docs/PLAN.md). The same docs are a site —
+> `make docs-serve` locally, and at <https://dulsaranethmin.github.io/spinup/>.
 
 ## What it looks like
 
