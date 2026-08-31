@@ -74,7 +74,7 @@ func newUpdateCmd(b Build) *cobra.Command {
 					fmt.Fprintf(out, "  update it with: %s\n", mgr.Command)
 					return nil
 				}
-				fmt.Fprintln(out, "  update it with: spinup update")
+				fmt.Fprintln(out, "  update it with: spin update")
 				return nil
 			}
 
@@ -96,7 +96,7 @@ func newUpdateCmd(b Build) *cobra.Command {
 				return failf(ExitUsage, "%w", err)
 			}
 
-			binary, err := update.Binary(archive, runtime.GOOS)
+			binary, err := update.Binary(archive, runtime.GOOS, update.SelfName(path))
 			if err != nil {
 				return failf(ExitUsage, "%w", err)
 			}

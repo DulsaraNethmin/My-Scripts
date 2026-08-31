@@ -25,7 +25,7 @@ func newEnvCmd() *cobra.Command {
 		Long: "env prints the environment a stack will start with: its ports, passwords\n" +
 			"and database names, resolved exactly as `up` resolves them.\n\n" +
 			"--edit opens the stack's env file in $EDITOR. Changes take effect on the\n" +
-			"next `spinup up`.",
+			"next `spin up`.",
 		Args:              cobra.ExactArgs(1),
 		ValidArgsFunction: completeOneStack,
 		RunE: func(cmd *cobra.Command, args []string) error {
@@ -94,7 +94,7 @@ func editFile(cmd *cobra.Command, stack, file string) error {
 		return failf(ExitUsage, "%s: %w", editor, err)
 	}
 
-	fmt.Fprintf(cmd.OutOrStdout(), "%s\n", ui.Dim("run `spinup up "+stack+"` to apply the changes"))
+	fmt.Fprintf(cmd.OutOrStdout(), "%s\n", ui.Dim("run `spin up "+stack+"` to apply the changes"))
 	return nil
 }
 

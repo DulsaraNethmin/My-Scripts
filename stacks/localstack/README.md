@@ -5,9 +5,9 @@ Kinesis, IAM and the rest, answering on your machine so tests and local runs
 never touch a real AWS account.
 
 ```
-spinup up localstack                      # http://localhost:4566
-spinup cli localstack -- s3 mb s3://demo  # awslocal, inside the container
-spinup cli localstack -- s3 ls
+spin up localstack                      # http://localhost:4566
+spin cli localstack -- s3 mb s3://demo  # awslocal, inside the container
+spin cli localstack -- s3 ls
 curl localhost:4566/_localstack/health    # what is available
 ```
 
@@ -42,9 +42,9 @@ passed per call (`aws --endpoint-url=http://localhost:4566 s3 ls`).
 image:
 
 ```
-spinup cli localstack -- s3 mb s3://demo
-spinup cli localstack -- sqs create-queue --queue-name jobs
-spinup cli localstack -- dynamodb list-tables
+spin cli localstack -- s3 mb s3://demo
+spin cli localstack -- sqs create-queue --queue-name jobs
+spin cli localstack -- dynamodb list-tables
 ```
 
 From your own shell, with the variables above exported, the plain `aws` CLI
@@ -55,7 +55,7 @@ and any SDK work the same way.
 `localstack-data` holds the working state and the caches LocalStack builds.
 Note that it is *not* a save file: in the community edition the resources you
 create are gone when the container stops. Persistence across restarts is a Pro
-feature (`PERSISTENCE=1`), so treat every `spinup up localstack` as an empty
+feature (`PERSISTENCE=1`), so treat every `spin up localstack` as an empty
 account and create what a test needs in the test.
 
 ## Notes
@@ -69,7 +69,7 @@ account and create what a test needs in the test.
   is also root on the host by another name — run this locally, not on
   anything exposed. On Windows the host side is `//./pipe/docker_engine`; see
   `LOCALSTACK_DOCKER_SOCK`.
-- No GUI, so `spinup open localstack` has nothing to open. LocalStack's web
+- No GUI, so `spin open localstack` has nothing to open. LocalStack's web
   interface is a hosted service at app.localstack.cloud that needs an account;
   `/_localstack/health` is the local equivalent and answers with JSON.
 - Only the gateway port is published. LocalStack can also allocate per-service

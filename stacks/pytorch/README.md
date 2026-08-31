@@ -5,9 +5,9 @@ PyTorch with JupyterLab, from the
 Runs on CPU anywhere, or on an NVIDIA GPU when you have one.
 
 ```
-spinup up pytorch             # CPU
-spinup up pytorch --gpu       # NVIDIA GPU
-spinup open pytorch           # open JupyterLab, token already in the URL
+spin up pytorch             # CPU
+spin up pytorch --gpu       # NVIDIA GPU
+spin open pytorch           # open JupyterLab, token already in the URL
 ```
 
 ## Ports
@@ -33,7 +33,7 @@ http://localhost:8888/lab?token=spinup
 ```
 
 Treat it as a password — anyone with it can execute arbitrary code in the
-container. Change it with `spinup env pytorch --edit`.
+container. Change it with `spin env pytorch --edit`.
 
 ## CPU and GPU are separate services
 
@@ -65,7 +65,7 @@ CUDA build upstream publishes. If you need matching versions, pin both to the
 `--gpu` needs an NVIDIA GPU, the proprietary driver, and the
 [NVIDIA Container Toolkit](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/latest/install-guide.html)
 on the host. Without them Docker reports `could not select device driver "nvidia"`.
-`spinup doctor` checks for this.
+`spin doctor` checks for this.
 
 There is no GPU path on macOS — Docker Desktop cannot pass through Apple Silicon
 GPUs, so Macs use the `cpu` profile. Both images are multi-arch, so the CPU
@@ -74,8 +74,8 @@ profile runs natively on arm64 rather than under emulation.
 ## Your files
 
 Notebooks live in the `pytorch-work` volume, mounted at `/home/jovyan/work` —
-the `work` folder you see in JupyterLab. It survives `spinup down` and is
-deleted by `spinup destroy`.
+the `work` folder you see in JupyterLab. It survives `spin down` and is
+deleted by `spin destroy`.
 
 To keep notebooks on the host instead, replace the volume in `compose.yaml`:
 
@@ -96,7 +96,7 @@ To keep notebooks on the host instead, replace the volume in `compose.yaml`:
 - The old `workspace:` named volume was declared but never mounted, so the
   bind-mounted `./workspace` was the only thing doing anything. Both are
   replaced by one named volume.
-- These images are large — several GB — so the first `spinup up pytorch` spends
+- These images are large — several GB — so the first `spin up pytorch` spends
   most of its time pulling.
 - `pip install` inside the container does **not** survive a container rebuild
   unless the package lands under `/home/jovyan/work`. For a reproducible

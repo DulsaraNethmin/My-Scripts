@@ -52,7 +52,7 @@ func newShellCmd() *cobra.Command {
 				service = args[1]
 			}
 			if service == "" {
-				return failf(ExitUsage, "%s declares no primary service — name one: `spinup shell %s <service>`",
+				return failf(ExitUsage, "%s declares no primary service — name one: `spin shell %s <service>`",
 					p.stack.Name, p.stack.Name)
 			}
 
@@ -117,7 +117,7 @@ func requireRunning(ctx context.Context, p *prepared, service string) error {
 	}
 
 	if len(running) == 0 {
-		return failf(ExitCompose, "%s is not running — start it with `spinup up %s`",
+		return failf(ExitCompose, "%s is not running — start it with `spin up %s`",
 			p.stack.Name, p.stack.Name)
 	}
 	return failf(ExitCompose, "%s has no running service called %s (running: %s)",
@@ -160,7 +160,7 @@ func newCLICmd() *cobra.Command {
 
 			names, extra := splitDashArgs(cmd, args)
 			if len(names) != 1 {
-				return failf(ExitUsage, "cli takes one stack: `spinup cli postgres`")
+				return failf(ExitUsage, "cli takes one stack: `spin cli postgres`")
 			}
 
 			p, err := prepare(ctx, names[0], flags)
@@ -169,7 +169,7 @@ func newCLICmd() *cobra.Command {
 			}
 
 			if p.stack.CLI == "" {
-				return failf(ExitUsage, "%s has no native client — try `spinup shell %s`",
+				return failf(ExitUsage, "%s has no native client — try `spin shell %s`",
 					p.stack.Name, p.stack.Name)
 			}
 			if p.stack.Primary == "" {
@@ -184,7 +184,7 @@ func newCLICmd() *cobra.Command {
 
 			// Only the client's name: the expanded command carries the
 			// stack's password, and echoing it would put it in the scrollback
-			// of everyone who ever runs `spinup cli` on a shared screen.
+			// of everyone who ever runs `spin cli` on a shared screen.
 			fmt.Fprintf(cmd.ErrOrStderr(), "%s %s in %s\n",
 				ui.Dim("=>"), command[0], p.project.Name())
 

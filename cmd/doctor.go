@@ -200,12 +200,12 @@ func checkPorts(ctx context.Context, cat *catalog.Catalog) docker.Check {
 	case len(problems) > 0:
 		check.Status = docker.StatusWarn
 		check.Detail = "in use: " + strings.Join(problems, ", ")
-		check.Hint = "free the port, or move the stack's: `spinup env <stack> --edit`, " +
-			"or `spinup up <stack> --port NAME=<port>` for one run"
+		check.Hint = "free the port, or move the stack's: `spin env <stack> --edit`, " +
+			"or `spin up <stack> --port NAME=<port>` for one run"
 	case len(shared) > 0:
 		check.Status = docker.StatusWarn
 		check.Detail = "claimed twice: " + strings.Join(shared, ", ")
-		check.Hint = "those stacks cannot run at the same time; move one with `spinup env <stack> --edit`"
+		check.Hint = "those stacks cannot run at the same time; move one with `spin env <stack> --edit`"
 	default:
 		check.Detail = fmt.Sprintf("%d host ports, all free", len(claims))
 	}

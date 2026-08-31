@@ -4,10 +4,10 @@ MongoDB 7 with [mongo-express](https://github.com/mongo-express/mongo-express) a
 the optional web GUI.
 
 ```
-spinup up mongodb             # database only
-spinup up mongodb --gui       # database + mongo-express
-spinup url mongodb            # print the connection string
-spinup cli mongodb            # mongosh, inside the container
+spin up mongodb             # database only
+spin up mongodb --gui       # database + mongo-express
+spin url mongodb            # print the connection string
+spin cli mongodb            # mongosh, inside the container
 ```
 
 ## Ports
@@ -37,7 +37,7 @@ mongodb://spinup:spinup@localhost:27017/spinup?authSource=admin
 not in `spinup`. Leave it off and authentication fails with a confusing error.
 
 Development defaults for a local machine; change them with
-`spinup env mongodb --edit`.
+`spin env mongodb --edit`.
 
 ## Seeding
 
@@ -50,7 +50,7 @@ first time the data volume is created. JavaScript files execute against
 db.users.insertMany([{ name: "ada" }, { name: "grace" }]);
 ```
 
-To reseed, `spinup destroy mongodb` then `spinup up mongodb`.
+To reseed, `spin destroy mongodb` then `spin up mongodb`.
 
 ## Gotchas
 
@@ -63,5 +63,5 @@ To reseed, `spinup destroy mongodb` then `spinup up mongodb`.
   separately from the MongoDB credentials. An unauthenticated request correctly
   returns 401.
 - The stack keeps two volumes: `mongodb-data` for your data and
-  `mongodb-config` for Mongo's own metadata. `spinup destroy` removes both.
-- `spinup down` keeps your data; only `spinup destroy` deletes it.
+  `mongodb-config` for Mongo's own metadata. `spin destroy` removes both.
+- `spin down` keeps your data; only `spin destroy` deletes it.

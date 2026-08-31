@@ -5,8 +5,8 @@ table from Docker labels, so a container becomes a hostname by adding two
 lines to its compose file.
 
 ```
-spinup up traefik                       # proxy on 8098, dashboard on 8092
-spinup open traefik                     # the dashboard
+spin up traefik                       # proxy on 8098, dashboard on 8092
+spin open traefik                     # the dashboard
 curl http://whoami.localhost:8098/      # the example route this stack ships
 ```
 

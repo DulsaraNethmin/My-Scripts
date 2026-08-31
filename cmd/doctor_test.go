@@ -191,7 +191,7 @@ func TestDoctorGPU(t *testing.T) {
 	}
 }
 
-// Every `spinup up` passes --wait-timeout, so a compose plugin without it is
+// Every `spin up` passes --wait-timeout, so a compose plugin without it is
 // worth saying out loud before the first command fails.
 func TestDoctorReportsComposeWithoutWaitTimeout(t *testing.T) {
 	t.Setenv(config.HomeEnv, t.TempDir())

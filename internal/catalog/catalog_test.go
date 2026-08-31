@@ -132,7 +132,7 @@ func TestFS(t *testing.T) {
 }
 
 // HasBuiltin answers a question Origin cannot: whether the binary still has a
-// copy of a stack the user has since edited. `spinup reset` turns on it —
+// copy of a stack the user has since edited. `spin reset` turns on it —
 // restoring means deleting the user's copy, which for a stack that exists only
 // there would be a delete, not a restore.
 func TestHasBuiltin(t *testing.T) {
@@ -158,7 +158,7 @@ func TestHasBuiltin(t *testing.T) {
 	}
 }
 
-// A scaffolded stack has to load, or `spinup new` hands the user something
+// A scaffolded stack has to load, or `spin new` hands the user something
 // broken and blames them for it.
 func TestScaffoldLoads(t *testing.T) {
 	files := catalog.Scaffold("my-thing")
@@ -252,7 +252,7 @@ func TestLoad(t *testing.T) {
 	}
 }
 
-// One broken stack in ~/.spinup/stacks must not take `spinup list` down with
+// One broken stack in ~/.spinup/stacks must not take `spin list` down with
 // it: the good ones still come back, and the error names the bad one.
 func TestAllKeepsGoingPastABrokenStack(t *testing.T) {
 	stacks, err := fixture().All()

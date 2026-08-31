@@ -36,7 +36,7 @@ func fakeRelease(t *testing.T, tag string) (archive []byte, name string) {
 	for _, f := range []struct {
 		name string
 		data []byte
-	}{{"LICENSE", []byte("MIT")}, {"spinup", binary}} {
+	}{{"LICENSE", []byte("MIT")}, {"spin", binary}, {"spinup", binary}} {
 		if err := tw.WriteHeader(&tar.Header{
 			Name: f.name, Mode: 0o755, Size: int64(len(f.data)), Typeflag: tar.TypeReg,
 		}); err != nil {
@@ -120,14 +120,19 @@ func TestInstallScript(t *testing.T) {
 		t.Errorf("install.sh does not report the version it installed:\n%s", out)
 	}
 
-	path := filepath.Join(dir, "spinup")
-	info, err := os.Stat(path)
-	if err != nil {
-		t.Fatalf("nothing was installed: %v\n%s", err, out)
+	// Both names, because both are what a release ships and the alias is the
+	// only thing keeping `spinup ...` working for anyone already on it.
+	for _, name := range []string{"spin", "spinup"} {
+		info, err := os.Stat(filepath.Join(dir, name))
+		if err != nil {
+			t.Fatalf("%s was not installed: %v\n%s", name, err, out)
+		}
+		if info.Mode().Perm()&0o111 == 0 {
+			t.Errorf("the installed %s is not executable: %v", name, info.Mode())
+		}
 	}
-	if info.Mode().Perm()&0o111 == 0 {
-		t.Errorf("the installed binary is not executable: %v", info.Mode())
-	}
+
+	path := filepath.Join(dir, "spin")
 
 	// The point of the whole script: what lands on the PATH runs.
 	got, err := exec.Command(path).Output()
@@ -154,7 +159,7 @@ func TestInstallScriptRefusesAWrongChecksum(t *testing.T) {
 	if !strings.Contains(out, "checksum") {
 		t.Errorf("the failure does not mention the checksum:\n%s", out)
 	}
-	if _, err := os.Stat(filepath.Join(dir, "spinup")); !os.IsNotExist(err) {
+	if _, err := os.Stat(filepath.Join(dir, "spin")); !os.IsNotExist(err) {
 		t.Error("install.sh installed the binary anyway")
 	}
 }

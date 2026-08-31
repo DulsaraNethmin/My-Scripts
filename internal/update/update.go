@@ -203,13 +203,27 @@ func checksumFor(checksums []byte, name string) (string, error) {
 	return "", fmt.Errorf("checksums.txt has no entry for %s", name)
 }
 
-// Binary extracts the spinup executable from a release archive: a tar.gz
-// everywhere, a zip on Windows.
-func Binary(archive []byte, goos string) ([]byte, error) {
-	if goos == "windows" {
-		return fromZip(archive, "spinup.exe")
+// SelfName maps the running executable's path to the archive entry that should
+// replace it. An archive ships both names, so `spin update` has to take `spin`
+// and `spinup update` has to take `spinup` — swapping them would leave the user
+// running a binary under a name they did not install. Anything else (a renamed
+// copy, `go build -o`) falls back to the taught name.
+func SelfName(path string) string {
+	base := strings.TrimSuffix(filepath.Base(path), ".exe")
+	if base == "spinup" {
+		return "spinup"
 	}
-	return fromTarGz(archive, "spinup")
+	return "spin"
+}
+
+// Binary extracts an executable from a release archive: a tar.gz everywhere, a
+// zip on Windows. name is which of the archive's two binaries to take; see
+// SelfName.
+func Binary(archive []byte, goos, name string) ([]byte, error) {
+	if goos == "windows" {
+		return fromZip(archive, name+".exe")
+	}
+	return fromTarGz(archive, name)
 }
 
 func fromTarGz(archive []byte, want string) ([]byte, error) {
@@ -312,7 +326,7 @@ type Manager struct {
 }
 
 // ManagedBy reports the package manager that installed the binary at path, so
-// `spinup update` can send a Homebrew user to Homebrew rather than overwriting
+// `spin update` can send a Homebrew user to Homebrew rather than overwriting
 // a file brew believes it owns — the next `brew upgrade` would undo it, and
 // `brew doctor` would complain in the meantime.
 func ManagedBy(path string) (Manager, bool) {

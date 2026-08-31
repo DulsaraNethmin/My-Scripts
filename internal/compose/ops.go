@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-// UpOptions are the knobs `spinup up` turns.
+// UpOptions are the knobs `spin up` turns.
 type UpOptions struct {
 	// Wait blocks until every service with a healthcheck reports healthy,
 	// which is what lets spinup print a connection string that works.
@@ -56,9 +56,9 @@ func (r *Runner) Up(ctx context.Context, p Project, opts UpOptions) error {
 	return r.Run(ctx, p, opts.Args()...)
 }
 
-// DownOptions are the knobs `spinup down` and `spinup destroy` turn.
+// DownOptions are the knobs `spin down` and `spin destroy` turn.
 type DownOptions struct {
-	// Volumes deletes the stack's data. Only `spinup destroy` sets it, and
+	// Volumes deletes the stack's data. Only `spin destroy` sets it, and
 	// only after asking.
 	Volumes bool
 
@@ -87,7 +87,7 @@ func (o DownOptions) Args() []string {
 }
 
 // Down stops the stack. Without Volumes the data survives, which is the whole
-// difference between `spinup down` and `spinup destroy`.
+// difference between `spin down` and `spin destroy`.
 func (r *Runner) Down(ctx context.Context, p Project, opts DownOptions) error {
 	return r.Run(ctx, p, opts.Args()...)
 }
@@ -97,7 +97,7 @@ func (r *Runner) Restart(ctx context.Context, p Project, services ...string) err
 	return r.Run(ctx, p, append([]string{"restart"}, services...)...)
 }
 
-// LogsOptions are the knobs `spinup logs` turns.
+// LogsOptions are the knobs `spin logs` turns.
 type LogsOptions struct {
 	Follow     bool
 	Tail       int // 0 means compose's default
@@ -272,7 +272,7 @@ func (p ProjectSummary) Running() bool {
 
 // ListProjects returns every compose project on the machine, spinup's and the
 // user's alike. One call answers "what is running?" for the whole catalog,
-// which is what `spinup list` needs.
+// which is what `spin list` needs.
 func (r *Runner) ListProjects(ctx context.Context) ([]ProjectSummary, error) {
 	out, err := r.capture(ctx, "", []string{"compose", "ls", "--all", "--format", "json"})
 	if err != nil {

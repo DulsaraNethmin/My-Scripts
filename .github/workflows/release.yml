@@ -106,11 +106,16 @@ jobs:
           done
           exit $fail
 
-      - name: the built binary carries the catalog and the version
+      # Both names ship in every archive: `spin` is what the docs teach and
+      # `spinup` is the alias that keeps working for anyone already on it. An
+      # archive missing either one silently drops half the install.
+      - name: the built binaries carry the catalog and the version
         run: |
-          tar -xzf dist/spinup_*_linux_amd64.tar.gz -C /tmp spinup
-          /tmp/spinup version
-          /tmp/spinup list
+          tar -xzf dist/spinup_*_linux_amd64.tar.gz -C /tmp spin spinup
+          /tmp/spin version
+          /tmp/spin list
+          # The alias is the same program, so it has to agree.
+          [ "$(/tmp/spin version)" = "$(/tmp/spinup version)" ]
 
       # Generated whether or not they are pushed, so the dry run proves the cask
       # and the manifest are still produced before a tag depends on them.

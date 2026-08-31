@@ -104,12 +104,16 @@ func newRootCmd(b Build) *cobra.Command {
 	var noColor bool
 
 	root := &cobra.Command{
-		Use:   "spinup",
+		// The command is `spin`, so `spin up postgres` reads as the sentence it
+		// is. `spinup` is installed alongside as an alias and runs the same
+		// binary; help always names `spin` so there is one taught spelling.
+		Use:   "spin",
 		Short: "Start local development services with one command",
-		Long: "spinup starts local development services — databases, queues, GUIs and\n" +
+		Long: "spin starts local development services — databases, queues, GUIs and\n" +
 			"dev tooling — with one command, using Docker Compose underneath.\n\n" +
 			"Every stack is a plain compose.yaml, embedded in this binary and\n" +
-			"materialised into ~/.spinup/stacks so you can read and tweak it.",
+			"materialised into ~/.spinup/stacks so you can read and tweak it.\n\n" +
+			"Installed as `spin` and as `spinup`; the two are the same program.",
 		Version:       b.Version,
 		SilenceUsage:  true, // usage after a failed run is noise; see the flag error below
 		SilenceErrors: true, // Execute prints the error, so cobra should not

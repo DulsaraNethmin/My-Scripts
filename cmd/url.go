@@ -66,7 +66,7 @@ func stackURL(p *prepared, gui bool) (string, error) {
 
 	url := catalogExpand(s.URL, p)
 	if url == "" {
-		return "", failf(ExitUsage, "%s has no connection string — try `spinup info %s`", s.Name, s.Name)
+		return "", failf(ExitUsage, "%s has no connection string — try `spin info %s`", s.Name, s.Name)
 	}
 	return url, nil
 }
@@ -80,7 +80,7 @@ func newOpenCmd() *cobra.Command {
 		Long: "open launches the stack's web interface — pgAdmin, phpMyAdmin, Jupyter,\n" +
 			"whatever it ships — in your browser, with the login printed beside it.\n\n" +
 			"The stack has to be running, and its GUI is behind the `gui` profile:\n" +
-			"`spinup up <stack> --gui` if you started it without one.",
+			"`spin up <stack> --gui` if you started it without one.",
 		Args:              cobra.ExactArgs(1),
 		ValidArgsFunction: completeOneStack,
 		RunE: func(cmd *cobra.Command, args []string) error {

@@ -62,7 +62,7 @@ func MergeEnv(layers ...Env) Env {
 //
 // Compose is the authority here — spinup passes the same file to it with
 // --env-file, so this parser exists to *report* what compose will do (in
-// `spinup url`, `env` and the post-up card), not to decide it.
+// `spin url`, `env` and the post-up card), not to decide it.
 func ParseEnv(data []byte) (Env, error) {
 	env := Env{}
 
@@ -140,7 +140,7 @@ func ParseEnvFile(path string) (Env, error) {
 //     defines
 //
 // Step 4 mirrors `docker compose`, which lets the shell environment win over
-// --env-file: `POSTGRES_PORT=5555 spinup up postgres` has to report the port
+// --env-file: `POSTGRES_PORT=5555 spin up postgres` has to report the port
 // compose will actually bind. Limiting it to known keys is what keeps an
 // unrelated PATH or USER out of the stack's environment.
 func ResolveEnv(stack *catalog.Stack, example []byte, userFile string) (Env, error) {

@@ -4,10 +4,10 @@
 as the optional web GUI.
 
 ```
-spinup up mariadb             # MariaDB on 3307
-spinup up mariadb --gui       # + Adminer on http://localhost:8097
-spinup cli mariadb            # the mariadb client, inside the container
-spinup url mariadb            # mysql://spinup:spinup@localhost:3307/spinup
+spin up mariadb             # MariaDB on 3307
+spin up mariadb --gui       # + Adminer on http://localhost:8097
+spin cli mariadb            # the mariadb client, inside the container
+spin url mariadb            # mysql://spinup:spinup@localhost:3307/spinup
 ```
 
 ## Ports
@@ -40,13 +40,13 @@ MariaDB speaks the MySQL wire protocol, so MySQL drivers, `mysql` clients and
 ## Seeding
 
 Anything in `init/` — `.sql`, `.sql.gz` or `.sh` — runs once, when the data
-volume is empty. Nothing runs on later starts; `spinup destroy mariadb` is what
+volume is empty. Nothing runs on later starts; `spin destroy mariadb` is what
 gets you back to a first start.
 
 ## Storage
 
-`mariadb-data` holds everything, so `spinup down mariadb` keeps your data and
-`spinup destroy mariadb` is the only thing that deletes it.
+`mariadb-data` holds everything, so `spin down mariadb` keeps your data and
+`spin destroy mariadb` is the only thing that deletes it.
 
 ## Notes
 

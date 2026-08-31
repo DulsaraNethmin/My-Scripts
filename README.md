@@ -4,12 +4,17 @@ Start local development services — databases, queues, GUIs, dev tooling — wi
 one command, on macOS, Linux and Windows, using Docker Compose underneath.
 
 ```
-spinup up postgres        # Postgres 16 + pgAdmin, running in ~10s
+spin up postgres        # Postgres 16 + pgAdmin, running in ~10s
 ```
 
 No cloning, no editing YAML, no remembering ports and passwords. **25 stacks**,
 each pinned to a real version, healthchecked, and able to run beside every
 other one.
+
+The command is `spin`, so `spin up postgres` and `spin down postgres` read as
+the phrases they are. `spinup` is installed alongside and runs the same program,
+so either spelling works — useful if you already have Fermyon's `spin` on your
+PATH.
 
 > Design: [`docs/PLAN.md`](docs/PLAN.md). The same docs are a site —
 > `make docs-serve` locally, and at <https://dulsaranethmin.github.io/spinup/>.
@@ -21,7 +26,7 @@ other one.
      ![demo](docs/demo.gif). The recipe is in the script's header. -->
 
 ```console
-$ spinup up postgres --gui
+$ spin up postgres --gui
 => postgres
  Container spinup-postgres-postgres-1  Healthy
  Container spinup-postgres-pgadmin-1  Healthy
@@ -30,16 +35,16 @@ $ spinup up postgres --gui
   gui       http://localhost:8080  (admin@example.com / spinup)
   env       ~/.spinup/env/postgres.env
 
-$ spinup ps
+$ spin ps
 STACK     SERVICE   STATUS         HEALTH   PORTS
 postgres  pgadmin   Up 16 seconds  healthy  8080->80
 postgres  postgres  Up 22 seconds  healthy  5432->5432
 
-$ spinup url postgres
+$ spin url postgres
 postgres://spinup:spinup@localhost:5432/spinup
 
-$ spinup down postgres          # stop, keep the data
-$ spinup destroy postgres       # stop and delete the data (asks first)
+$ spin down postgres          # stop, keep the data
+$ spin destroy postgres       # stop and delete the data (asks first)
 ```
 
 Without `--gui` you get the database alone — pgAdmin is a container of its own
@@ -61,8 +66,8 @@ scoop install spinup
 ```
 
 **Linux and macOS** — the install script. It downloads the archive for your
-platform, checks it against the release's `checksums.txt`, and installs one
-binary:
+platform, checks it against the release's `checksums.txt`, and installs both
+names:
 
 ```
 curl -fsSL https://raw.githubusercontent.com/DulsaraNethmin/spinup/main/install.sh | sh
@@ -74,7 +79,7 @@ curl -fsSL https://raw.githubusercontent.com/DulsaraNethmin/spinup/main/install.
 irm https://raw.githubusercontent.com/DulsaraNethmin/spinup/main/install.ps1 | iex
 ```
 
-Then `spinup update` keeps it current — except where Homebrew or Scoop owns the
+Then `spin update` keeps it current — except where Homebrew or Scoop owns the
 binary, in which case it says so and prints the right command instead.
 
 ### From source
@@ -84,7 +89,7 @@ Go 1.25 and Docker with Compose v2:
 ```
 git clone https://github.com/DulsaraNethmin/spinup.git && cd spinup
 make build                # -> bin/spinup
-./bin/spinup doctor       # check docker, compose and spinup's own setup
+./bin/spin doctor       # check docker, compose and spinup's own setup
 ```
 
 ## Commands
@@ -107,7 +112,7 @@ make build                # -> bin/spinup
 `list` and `ps` take `--json`, for scripting.
 
 Several stacks at once work everywhere a stack is taken:
-`spinup up postgres redis mailpit`.
+`spin up postgres redis mailpit`.
 
 ## The catalog
 
@@ -167,7 +172,7 @@ column means the web interface is a container of its own and starts only with
 | `pytorch` | PyTorch with JupyterLab, CPU or NVIDIA GPU | 8888, 6006 | — |
 
 Each folder has a `README.md` with its credentials, seeding and gotchas —
-`spinup info <stack>` prints it. Ports are allocated centrally in
+`spin info <stack>` prints it. Ports are allocated centrally in
 [`docs/PORTS.md`](docs/PORTS.md).
 
 ## Where things live
@@ -180,7 +185,7 @@ Each folder has a `README.md` with its credentials, seeding and gotchas —
 
 Neither is ever overwritten once it exists, and anything in `~/.spinup/stacks`
 shadows the copy built into the binary — so a stack you change stays changed.
-`spinup reset <stack>` puts a built-in one back.
+`spin reset <stack>` puts a built-in one back.
 
 Data lives in named Docker volumes called `spinup-<stack>_*`. Nothing is ever
 written into the repository or the install location.
@@ -209,7 +214,7 @@ If you do not have them, [`setup/`](setup/) has an installer for Ubuntu/Debian,
 Fedora/RHEL and macOS.
 
 ```
-spinup doctor    # or `make doctor` from a source checkout
+spin doctor    # or `make doctor` from a source checkout
 ```
 
 ## FAQ
@@ -229,25 +234,25 @@ it. `destroy` is the only command that deletes it, and it asks first.
 That is the point of the port table. Every stack keeps its native port where it
 is free and puts its GUI in the `80xx` range, and where two want the same number
 the newer one moves — `mariadb` is on 3307, `clickhouse`'s native protocol on
-9001. `spinup doctor` reports collisions with things already on your machine,
+9001. `spin doctor` reports collisions with things already on your machine,
 and `--port NAME=n` overrides one for a single run.
 
 **How do I change a port or a password?**
-`spinup env <stack>` prints what a stack will start with; `spinup env <stack>
+`spin env <stack>` prints what a stack will start with; `spin env <stack>
 --edit` opens `~/.spinup/env/<stack>.env` in `$EDITOR`. Most credentials are
 applied when a database first initialises, so changing one afterwards needs a
-`spinup destroy` first — each stack's README says which of its settings are
+`spin destroy` first — each stack's README says which of its settings are
 like that.
 
 **Can I add my own stack?**
-`spinup new <name>` scaffolds one, and `~/.spinup/stacks/<name>/` is where it
+`spin new <name>` scaffolds one, and `~/.spinup/stacks/<name>/` is where it
 goes. The CLI never needs a code change to learn about it. If it is something
 other people would want, see below.
 
 **Something is unhealthy. Where do I look?**
-`spinup logs <stack>` and `spinup ps`. Almost every first-run failure is one of
-three things: a port already taken (`spinup doctor`), a credential changed after
-the volume was created (`spinup destroy`), or not enough memory given to Docker
+`spin logs <stack>` and `spin ps`. Almost every first-run failure is one of
+three things: a port already taken (`spin doctor`), a credential changed after
+the volume was created (`spin destroy`), or not enough memory given to Docker
 Desktop for a JVM stack like `opensearch` or `kafka`.
 
 **Does it need root, or change anything outside `~/.spinup`?**

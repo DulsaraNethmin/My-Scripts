@@ -3,10 +3,10 @@
 Redis 7 with [RedisInsight](https://redis.io/insight/) as the optional web GUI.
 
 ```
-spinup up redis               # redis only
-spinup up redis --gui         # redis + RedisInsight
-spinup url redis              # print the connection string
-spinup cli redis              # redis-cli, inside the container
+spin up redis               # redis only
+spin up redis --gui         # redis + RedisInsight
+spin url redis              # print the connection string
+spin cli redis              # redis-cli, inside the container
 ```
 
 ## Ports
@@ -38,7 +38,7 @@ The stock Redis image keeps everything in memory and the old stack declared no
 volume at all, so every stop lost the whole dataset. This stack runs with
 `--appendonly yes` and a `redis-data` volume, so writes survive restarts.
 
-`spinup down` keeps your data; only `spinup destroy` deletes it.
+`spin down` keeps your data; only `spin destroy` deletes it.
 
 If you would rather have a pure in-memory cache — faster, and closer to how
 Redis is often used in production behind a real database — drop `--appendonly yes`
@@ -54,7 +54,7 @@ from the `command:` in `compose.yaml`.
   internet. To opt out, remove `--requirepass` from the `command:` — but only
   do that if you are certain the port is not reachable from your network.
 - `redis-cli` prints a warning when given `-a` on the command line;
-  `--no-auth-warning` (already in the `spinup cli` command) silences it.
+  `--no-auth-warning` (already in the `spin cli` command) silences it.
 - The plan named `redis/redisinsight:2`, which does not exist. RedisInsight is
   now on 3.x and the image exposes port **5540**, not the 8001 used by the
   discontinued v1 in the old stack.

@@ -181,23 +181,25 @@ got=$(sha256 "$tmp/$archive")
   got  $got
   want $want"
 
-tar -xzf "$tmp/$archive" -C "$tmp" spinup || die "the archive has no spinup binary in it"
-chmod +x "$tmp/spinup"
+tar -xzf "$tmp/$archive" -C "$tmp" spin spinup || die "the archive has no spin/spinup binaries in it"
+chmod +x "$tmp/spin" "$tmp/spinup"
 
 dir=$(install_dir)
 mkdir -p "$dir" 2>/dev/null || true
 
 if [ -w "$dir" ]; then
+	mv "$tmp/spin" "$dir/spin"
 	mv "$tmp/spinup" "$dir/spinup"
 elif have sudo; then
 	say "${DIM}$dir needs root — using sudo${RESET}"
+	sudo mv "$tmp/spin" "$dir/spin"
 	sudo mv "$tmp/spinup" "$dir/spinup"
 else
 	die "cannot write to $dir. Re-run with --dir \$HOME/.local/bin, or as root."
 fi
 
 say ""
-say "${BOLD}spinup $tag${RESET} installed at $dir/spinup"
+say "${BOLD}spin $tag${RESET} installed at $dir/spin, with $dir/spinup beside it"
 
 case ":$PATH:" in
 *":$dir:"*) ;;
@@ -210,8 +212,8 @@ esac
 
 say ""
 say "Next:"
-say "  ${DIM}spinup doctor${RESET}          check Docker is ready"
-say "  ${DIM}spinup list${RESET}            the stack catalog"
-say "  ${DIM}spinup up postgres${RESET}     Postgres 16 + pgAdmin"
+say "  ${DIM}spin doctor${RESET}          check Docker is ready"
+say "  ${DIM}spin list${RESET}            the stack catalog"
+say "  ${DIM}spin up postgres${RESET}     Postgres 16 + pgAdmin"
 say ""
-say "Shell completion: ${DIM}spinup completion --help${RESET}"
+say "Shell completion: ${DIM}spin completion --help${RESET}"

@@ -136,7 +136,7 @@ func (c *Client) ComposeVersion(ctx context.Context) (string, error) {
 }
 
 // SupportsWaitTimeout reports whether `docker compose up` has --wait-timeout,
-// which `spinup up` passes on every run. Asking the CLI rather than comparing
+// which `spin up` passes on every run. Asking the CLI rather than comparing
 // version numbers: the flag arrived in a v2 minor release, and a wrong constant
 // here would be a check that lies in both directions.
 func (c *Client) SupportsWaitTimeout(ctx context.Context) bool {

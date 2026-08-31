@@ -61,7 +61,7 @@ func prepare(ctx context.Context, name string, flags profileFlags) (*prepared, e
 	stack, err := cat.Load(name)
 	if err != nil {
 		if errors.Is(err, catalog.ErrNotFound) {
-			return nil, failf(ExitNotFound, "no stack called %q — run `spinup list` to see them", name)
+			return nil, failf(ExitNotFound, "no stack called %q — run `spin list` to see them", name)
 		}
 		return nil, err
 	}
@@ -148,7 +148,7 @@ func requireDocker(ctx context.Context) error {
 	defer cancel()
 
 	if err := docker.New().Available(ctx); err != nil {
-		return failf(ExitDocker, "%s (run `spinup doctor` for details)", err)
+		return failf(ExitDocker, "%s (run `spin doctor` for details)", err)
 	}
 	return nil
 }
@@ -174,11 +174,11 @@ func splitDashArgs(cmd *cobra.Command, args []string) (stacks, passthrough []str
 }
 
 // completeStacks completes a stack name from the catalog. It is what makes
-// `spinup up <tab>` worth having completions for at all, and it is why every
+// `spin up <tab>` worth having completions for at all, and it is why every
 // stack-taking command sets ValidArgsFunction.
 //
 // Names already on the line are dropped, so completing the second stack of
-// `spinup up postgres <tab>` does not offer postgres again.
+// `spin up postgres <tab>` does not offer postgres again.
 func completeStacks(cmd *cobra.Command, args []string, prefix string) ([]string, cobra.ShellCompDirective) {
 	cat, ok := catalog.FromContext(cmd.Context())
 	if !ok {

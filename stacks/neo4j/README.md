@@ -4,10 +4,10 @@
 Cypher, with Neo4j Browser served by the database itself.
 
 ```
-spinup up neo4j               # bolt://localhost:7687
-spinup open neo4j             # Neo4j Browser on http://localhost:8091
-spinup cli neo4j              # cypher-shell, inside the container
-spinup url neo4j              # the Bolt connection string
+spin up neo4j               # bolt://localhost:7687
+spin open neo4j             # Neo4j Browser on http://localhost:8091
+spin cli neo4j              # cypher-shell, inside the container
+spin url neo4j              # the Bolt connection string
 ```
 
 ## Ports
@@ -35,11 +35,11 @@ bolt://neo4j:spinuppass@localhost:7687
 The user is always `neo4j`: `NEO4J_AUTH` can set the initial password but not
 the name. The password needs at least 8 characters, which is why the default
 is not the catalog's usual `spinup`. It is written on the first start only —
-`spinup destroy neo4j` to change it later.
+`spin destroy neo4j` to change it later.
 
 ## Querying
 
-In Browser, or through `spinup cli neo4j`:
+In Browser, or through `spin cli neo4j`:
 
 ```cypher
 CREATE (a:Person {name: 'Ada'})-[:KNOWS]->(b:Person {name: 'Grace'});
@@ -60,8 +60,8 @@ container can write back into your stack folder.
 
 ## Storage
 
-`neo4j-data` holds the graph, `neo4j-logs` the server logs. `spinup down neo4j`
-keeps both; `spinup destroy neo4j` deletes them.
+`neo4j-data` holds the graph, `neo4j-logs` the server logs. `spin down neo4j`
+keeps both; `spin destroy neo4j` deletes them.
 
 ## Notes
 

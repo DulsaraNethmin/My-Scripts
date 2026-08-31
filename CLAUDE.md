@@ -10,7 +10,7 @@ Docker Compose underneath.
 
 ```
 brew install DulsaraNethmin/tap/spinup
-spinup up postgres      # → Postgres 16 + pgAdmin, running in ~10s
+spin up postgres        # → Postgres 16 + pgAdmin, running in ~10s
 ```
 
 The repo is `DulsaraNethmin/spinup`, grown **in place** out of `My-Scripts` — a

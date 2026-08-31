@@ -5,9 +5,9 @@ message your app sends and shows it in a web inbox instead of delivering it.
 Point your development mailer at it and nothing can ever reach a real person.
 
 ```
-spinup up mailpit             # SMTP on 1025, inbox on http://localhost:8085
-spinup open mailpit           # the inbox, in your browser
-spinup url mailpit            # smtp://localhost:1025
+spin up mailpit             # SMTP on 1025, inbox on http://localhost:8085
+spin open mailpit           # the inbox, in your browser
+spin url mailpit            # smtp://localhost:1025
 ```
 
 ## Ports
@@ -42,7 +42,7 @@ username and password are ignored. From another container, the host is
 ## Storage
 
 Messages are kept in `mailpit-data` (`MP_DATABASE=/data/mailpit.db`), so
-`spinup down mailpit` keeps the inbox and `spinup destroy mailpit` empties it.
+`spin down mailpit` keeps the inbox and `spin destroy mailpit` empties it.
 Without that database Mailpit holds everything in memory and forgets it on
 every restart, which is the default the image ships with.
 

@@ -4,8 +4,8 @@ nginx serving a static site or a single-page-app build, built locally from the
 `Dockerfile` in this folder.
 
 ```
-spinup up nginx-static
-spinup open nginx-static
+spin up nginx-static
+spin open nginx-static
 ```
 
 ## Ports
@@ -21,9 +21,9 @@ of the image. Point `NGINX_SITE` at a folder on your machine to serve that
 instead:
 
 ```
-spinup env nginx-static --edit
+spin env nginx-static --edit
 # NGINX_SITE=/Users/you/project/dist
-spinup restart nginx-static
+spin restart nginx-static
 ```
 
 Compose treats any value starting with `/` or `.` as a bind mount and anything

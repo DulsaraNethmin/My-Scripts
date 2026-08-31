@@ -4,9 +4,9 @@
 Amazon S3, on your machine, with a web console for poking at buckets.
 
 ```
-spinup up minio               # S3 on :9000, console on http://localhost:8086
-spinup open minio             # the console
-spinup cli minio              # mc ls local — the buckets, from inside
+spin up minio               # S3 on :9000, console on http://localhost:8086
+spin open minio             # the console
+spin cli minio              # mc ls local — the buckets, from inside
 ```
 
 ## Ports
@@ -49,8 +49,8 @@ From another container the endpoint is `http://host.docker.internal:9000`.
 
 ## Storage
 
-Objects live in the `minio-data` volume, so `spinup down minio` keeps them and
-`spinup destroy minio` deletes them. There is no bucket by default — make one
+Objects live in the `minio-data` volume, so `spin down minio` keeps them and
+`spin destroy minio` deletes them. There is no bucket by default — make one
 in the console, with `mc`, or with your SDK's create-bucket call.
 
 ## Notes

@@ -1,7 +1,8 @@
 # spinup — development Makefile
 # Progress tracking lives in docs/TASKS.tsv, driven by scripts/progress.sh.
 
-BINARY      := spinup
+BINARY      := spin
+ALIAS       := spinup
 MODULE      := github.com/DulsaraNethmin/spinup
 BIN_DIR     := bin
 STACKS_DIR  := stacks
@@ -69,7 +70,8 @@ ifeq ($(HAS_GO_CODE),)
 else
 	@mkdir -p $(BIN_DIR)
 	$(GO) build -trimpath -ldflags '$(LDFLAGS)' -o $(BIN_DIR)/$(BINARY) .
-	@echo "built $(BIN_DIR)/$(BINARY) ($(VERSION))"
+	@ln -sf $(BINARY) $(BIN_DIR)/$(ALIAS)
+	@echo "built $(BIN_DIR)/$(BINARY) (and $(ALIAS) beside it) ($(VERSION))"
 endif
 
 install: ## go install the binary into GOPATH/bin

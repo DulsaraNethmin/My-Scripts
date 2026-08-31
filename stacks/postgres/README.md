@@ -3,10 +3,10 @@
 PostgreSQL 16 with [pgAdmin 4](https://www.pgadmin.org/) as the optional web GUI.
 
 ```
-spinup up postgres            # database only
-spinup up postgres --gui      # database + pgAdmin
-spinup url postgres           # print the connection string
-spinup cli postgres           # psql, inside the container
+spin up postgres            # database only
+spin up postgres --gui      # database + pgAdmin
+spin url postgres           # print the connection string
+spin cli postgres           # psql, inside the container
 ```
 
 ## Ports
@@ -34,7 +34,7 @@ postgres://spinup:spinup@localhost:5432/spinup
 ```
 
 These are development defaults on a local machine. Change them in
-`spinup env postgres --edit`, and never expose this stack to a network you do
+`spin env postgres --edit`, and never expose this stack to a network you do
 not control.
 
 ## Connecting from pgAdmin
@@ -57,15 +57,15 @@ stacks/postgres/init/
 └── 02-seed.sql
 ```
 
-It will **not** re-run on later starts. To reseed, `spinup destroy postgres`
-(which deletes the volume) and `spinup up postgres` again.
+It will **not** re-run on later starts. To reseed, `spin destroy postgres`
+(which deletes the volume) and `spin up postgres` again.
 
 ## Gotchas
 
 - `POSTGRES_USER`, `POSTGRES_PASSWORD` and `POSTGRES_DB` are only read when the
   data volume is empty. Editing them later changes nothing until you destroy the
   volume — this surprises everyone at least once.
-- `spinup down` keeps your data; only `spinup destroy` deletes it.
+- `spin down` keeps your data; only `spin destroy` deletes it.
 - The database initialises with `--locale=C` for reproducible sort order across
   hosts. If you need locale-aware collation, set `POSTGRES_INITDB_ARGS` before
   the first start.
@@ -75,6 +75,6 @@ It will **not** re-run on later starts. To reseed, `spinup destroy postgres`
   `.local` and `.test` and crash-loops on startup if you use one. Stick to a
   real-looking domain.
 - Port 5432 or 8080 already taken? That is common if you run other Compose
-  projects. Override per machine with `spinup env postgres --edit`, or for one
-  run with `spinup up postgres --port POSTGRES_PORT=15432`. Defaults for every
+  projects. Override per machine with `spin env postgres --edit`, or for one
+  run with `spin up postgres --port POSTGRES_PORT=15432`. Defaults for every
   stack are listed in `docs/PORTS.md`.

@@ -83,7 +83,7 @@ func newListCmd() *cobra.Command {
 	return cmd
 }
 
-// stackJSON is `spinup list --json`. It is an interface other programs read,
+// stackJSON is `spin list --json`. It is an interface other programs read,
 // so the fields are the ones a script would otherwise parse out of the table —
 // and the ports are resolved, not the defaults, because a script that connects
 // to the default port when the user has changed it is worse than no script.

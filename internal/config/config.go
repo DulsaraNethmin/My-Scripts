@@ -17,7 +17,7 @@ import (
 // does by default. Everything here has a working default, so the file only
 // exists once someone changes something.
 type Config struct {
-	// GUI brings a stack's gui profile up with it, so `spinup up postgres`
+	// GUI brings a stack's gui profile up with it, so `spin up postgres`
 	// starts pgAdmin too. --no-gui turns it off for a single run.
 	GUI bool `yaml:"gui"`
 }

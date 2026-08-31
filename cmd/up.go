@@ -46,7 +46,7 @@ func newUpCmd() *cobra.Command {
 
 			names, extra := splitDashArgs(cmd, args)
 			if len(names) == 0 {
-				return failf(ExitUsage, "which stack? try `spinup up postgres`")
+				return failf(ExitUsage, "which stack? try `spin up postgres`")
 			}
 
 			for _, name := range names {

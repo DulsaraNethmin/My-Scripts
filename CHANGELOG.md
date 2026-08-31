@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- The command is now `spin`, so `spin up mongodb` and `spin down mongodb` read
+  as the phrases they are. `spinup` is installed beside it and runs the same
+  program, so nothing breaks for anyone already on v1.1.0 — and it is a way out
+  if Fermyon's `spin` or Spinnaker's `spin` already owns the name on your PATH.
+
+  They are two real binaries rather than a binary and a symlink: GoReleaser's
+  Scoop config populates `bin` from the build artifacts and exposes no shim
+  alias, so on Windows a second name has to be a second artifact. Doing it the
+  same way everywhere beats a cask-only Ruby alias plus a PowerShell special
+  case. Archives are about twice the size as a result.
+
+  `~/.spinup/`, the `spinup-<stack>` Compose project names and the
+  `spinup-<stack>_` volume prefix are all unchanged — renaming those would
+  orphan running stacks and their data.
+
 ### Fixed
 
 - The Homebrew cask unquarantines the binary in `preflight`, not `postflight`.

@@ -95,7 +95,7 @@ func TestDownVolumes(t *testing.T) {
 	}
 }
 
-// exec is how `spinup shell` and `spinup cli` reach a container. -T is the
+// exec is how `spin shell` and `spin cli` reach a container. -T is the
 // flag that matters: compose asks for a TTY by default and fails outright
 // without one, which is every scripted invocation.
 func TestExecArgs(t *testing.T) {
