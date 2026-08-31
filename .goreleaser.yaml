@@ -209,9 +209,9 @@ changelog:
       - "^Merge "
 
 release:
-  # Owner and repo are taken from the git remote on purpose: the GitHub repo is
-  # still DulsaraNethmin/My-Scripts until the rename in task 0.3, and hardcoding
-  # a name here would fail the release the day either one changed.
+  # Owner and repo are taken from the git remote on purpose: hardcoding a name
+  # here would fail the release the day the owner or the repository changed —
+  # as it did when My-Scripts became spinup.
   draft: false
   prerelease: auto
   name_template: "v{{ .Version }}"
