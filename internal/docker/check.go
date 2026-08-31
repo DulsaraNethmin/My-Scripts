@@ -72,11 +72,42 @@ func (c *Client) Diagnose(ctx context.Context) []Check {
 			Name: "compose", Detail: "not available", Status: StatusFail,
 			Hint: "install the docker compose plugin (see setup/ in the spinup repo)",
 		})
+	case !c.SupportsWaitTimeout(ctx):
+		// Every `spinup up` passes --wait-timeout, so a plugin without it
+		// fails on the first command rather than here.
+		checks = append(checks, Check{
+			Name: "compose", Detail: "v" + compose + ", without --wait-timeout", Status: StatusWarn,
+			Hint: "upgrade the compose plugin; `spinup up` waits for healthy with that flag",
+		})
 	default:
 		checks = append(checks, Check{Name: "compose", Detail: "v" + compose, Status: StatusOK})
 	}
 
+	checks = append(checks, c.gpuCheck(ctx))
+
 	return checks
+}
+
+// gpuCheck reports the NVIDIA container runtime, which only the pytorch stack's
+// gpu profile needs. Not having one is not a problem — most machines do not —
+// so the case worth flagging is the machine with a driver and no runtime: a GPU
+// docker cannot reach is a setup someone meant to finish.
+func (c *Client) gpuCheck(ctx context.Context) Check {
+	has, err := c.HasNVIDIARuntime(ctx)
+	switch {
+	case err != nil:
+		return Check{Name: "gpu", Detail: "could not be determined", Status: StatusWarn, Hint: err.Error()}
+	case has:
+		return Check{Name: "gpu", Detail: "nvidia runtime available", Status: StatusOK}
+	case HasNVIDIADriver():
+		return Check{
+			Name: "gpu", Detail: "an NVIDIA driver is installed but docker has no nvidia runtime",
+			Status: StatusWarn,
+			Hint:   "install nvidia-container-toolkit and restart docker, or skip `spinup up pytorch --gpu`",
+		}
+	default:
+		return Check{Name: "gpu", Detail: "no nvidia runtime (only `spinup up pytorch --gpu` needs one)", Status: StatusOK}
+	}
 }
 
 // OK reports whether every check passed. Warnings do not count as failures.

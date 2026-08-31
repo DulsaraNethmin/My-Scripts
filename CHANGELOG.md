@@ -187,6 +187,21 @@ defaults, and GUIs on non-colliding `80xx` ports recorded in `docs/PORTS.md`.
   browser with the login beside it (`--print` for a headless machine).
   `spinup info <stack>` is the stack's page: what it is, its ports,
   credentials and addresses, then its README.
+- `spinup doctor` now checks the two things that stop a stack from starting
+  after Docker itself is fine: whether anything already holds the host ports
+  the catalog wants — probed by connecting, because binding gets it wrong in
+  both directions on a developer machine (a port under 1024 fails with
+  "permission denied" and looks taken, and Docker Desktop's published ports do
+  not stop a second bind and look free) — and whether two stacks claim the
+  same port, which `docs/PORTS.md` prevents for the built-in catalog but
+  cannot for a stack of your own.
+- doctor also reports the NVIDIA container runtime, warning only in the case
+  worth a warning: a machine with an NVIDIA driver that docker cannot use.
+  A machine with no GPU is not a problem and is not reported as one. And it
+  checks that `docker compose up` has `--wait-timeout` by asking the CLI
+  rather than comparing version numbers, since every `spinup up` passes it.
+- doctor's closing line acknowledges warnings instead of saying "everything
+  checks out" over three of them.
 - `spinup up --port NAME=1234` moves a host port for one run without editing
   anything, for the common case of a port already being taken. Compose gives
   the process environment precedence over `--env-file`, which is what makes it

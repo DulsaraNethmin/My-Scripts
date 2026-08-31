@@ -24,16 +24,20 @@ func (f fake) Output(_ context.Context, _ string, args ...string) ([]byte, error
 }
 
 const (
-	clientArgs  = "version --format {{.Client.Version}}"
-	serverArgs  = "version --format {{.Server.Version}}"
-	composeArgs = "compose version --short"
+	clientArgs   = "version --format {{.Client.Version}}"
+	serverArgs   = "version --format {{.Server.Version}}"
+	composeArgs  = "compose version --short"
+	upHelpArgs   = "compose up --help"
+	runtimesArgs = "info --format {{json .Runtimes}}"
 )
 
 func healthy() fake {
 	return fake{out: map[string]string{
-		clientArgs:  "28.5.1",
-		serverArgs:  "28.5.1",
-		composeArgs: "2.40.2-desktop.1",
+		clientArgs:   "28.5.1",
+		serverArgs:   "28.5.1",
+		composeArgs:  "2.40.2-desktop.1",
+		upHelpArgs:   "Usage: docker compose up\n  --wait\n  --wait-timeout int",
+		runtimesArgs: `{"io.containerd.runc.v2":{},"runc":{}}`,
 	}}
 }
 
@@ -119,8 +123,8 @@ func TestDiagnoseHealthy(t *testing.T) {
 	if !docker.OK(checks) {
 		t.Errorf("healthy docker reported a failure: %+v", checks)
 	}
-	if len(checks) != 3 {
-		t.Errorf("checks = %+v, want docker, daemon and compose", checks)
+	if len(checks) != 4 {
+		t.Errorf("checks = %+v, want docker, daemon, compose and gpu", checks)
 	}
 	for _, c := range checks {
 		if c.Detail == "" {
@@ -155,8 +159,49 @@ func TestDiagnoseComposeV1(t *testing.T) {
 	if docker.OK(checks) {
 		t.Error("OK with compose v1")
 	}
-	last := checks[len(checks)-1]
-	if last.Name != "compose" || !strings.Contains(last.Detail, "1.29.2") {
-		t.Errorf("last check = %+v, want the v1 version reported", last)
+	compose := checks[2]
+	if compose.Name != "compose" || !strings.Contains(compose.Detail, "1.29.2") {
+		t.Errorf("compose check = %+v, want the v1 version reported", compose)
+	}
+}
+
+// The gpu check exists for one stack, so it must not turn every machine
+// without a card into a warning — only a machine with a driver docker cannot
+// use.
+func TestDiagnoseGPU(t *testing.T) {
+	f := healthy()
+	f.out[runtimesArgs] = `{"nvidia":{"path":"nvidia-container-runtime"},"runc":{}}`
+
+	checks := docker.NewWith(f).Diagnose(context.Background())
+	gpu := checks[len(checks)-1]
+	if gpu.Name != "gpu" || gpu.Status != docker.StatusOK || !strings.Contains(gpu.Detail, "nvidia") {
+		t.Errorf("gpu check = %+v, want ok with the runtime named", gpu)
+	}
+
+	// No runtime and no driver: not a problem, and not a warning either.
+	plain := docker.NewWith(healthy()).Diagnose(context.Background())
+	gpu = plain[len(plain)-1]
+	if docker.HasNVIDIADriver() {
+		t.Skip("this machine has an NVIDIA driver, so the no-GPU case cannot be tested here")
+	}
+	if gpu.Status != docker.StatusOK {
+		t.Errorf("gpu check on a machine with no GPU = %+v, want ok", gpu)
+	}
+}
+
+// spinup up passes --wait-timeout on every run, so a plugin without it is
+// reported before the first command fails.
+func TestDiagnoseComposeWithoutWaitTimeout(t *testing.T) {
+	f := healthy()
+	f.out[upHelpArgs] = "Usage: docker compose up\n  --wait"
+
+	checks := docker.NewWith(f).Diagnose(context.Background())
+	if !docker.OK(checks) {
+		t.Error("a missing flag is a warning, not a failure")
+	}
+
+	compose := checks[2]
+	if compose.Status != docker.StatusWarn || !strings.Contains(compose.Detail, "--wait-timeout") {
+		t.Errorf("compose check = %+v, want a warning naming the flag", compose)
 	}
 }

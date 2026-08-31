@@ -3,8 +3,10 @@ package cmd
 import (
 	"bytes"
 	"context"
+	"net"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"testing"
 	"testing/fstest"
@@ -33,7 +35,25 @@ func healthyDocker() fakeDocker {
 		"version --format {{.Client.Version}}": "28.5.1",
 		"version --format {{.Server.Version}}": "28.5.1",
 		"compose version --short":              "2.40.2",
+		"compose up --help":                    "Usage: docker compose up\n  --wait\n  --wait-timeout int\n",
+		"info --format {{json .Runtimes}}":     `{"io.containerd.runc.v2":{},"runc":{}}`,
 	}}
+}
+
+// freePort returns a port nothing is listening on, by taking one and letting
+// it go. Good enough for a check whose whole answer is "is anything there".
+func freeDoctorPort(t *testing.T) string {
+	t.Helper()
+
+	l, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	port := l.Addr().(*net.TCPAddr).Port
+	if err := l.Close(); err != nil {
+		t.Fatal(err)
+	}
+	return strconv.Itoa(port)
 }
 
 func runDoctor(t *testing.T, f fakeDocker) (string, error) {
@@ -51,6 +71,13 @@ func runDoctor(t *testing.T, f fakeDocker) (string, error) {
 				"url: postgres://localhost:${POSTGRES_PORT}\nports:\n  - name: POSTGRES_PORT\n    default: 5432\n")},
 	}
 	ctx := catalog.NewContext(context.Background(), catalog.New(stacks))
+
+	// The stack's port is resolved from the environment, so the port check has
+	// something predictable to probe rather than whatever this machine happens
+	// to be running.
+	if os.Getenv("POSTGRES_PORT") == "" {
+		t.Setenv("POSTGRES_PORT", freeDoctorPort(t))
+	}
 
 	// Run first: a return statement evaluates its operands left to right, so
 	// out.String() would otherwise be read before the command has written to it.
@@ -116,5 +143,67 @@ func TestDoctorReportsABrokenConfig(t *testing.T) {
 		if strings.Contains(line, "field guy not found") && !strings.Contains(line, "fail") {
 			t.Errorf("the config error wrapped onto its own line:\n%s", out)
 		}
+	}
+}
+
+// The port check is what answers "why will this not start": something else is
+// already on the port the stack wants.
+func TestDoctorReportsAPortInUse(t *testing.T) {
+	t.Setenv(config.HomeEnv, t.TempDir())
+
+	l, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer l.Close() //nolint:errcheck // held only for the length of the test
+
+	port := strconv.Itoa(l.Addr().(*net.TCPAddr).Port)
+	t.Setenv("POSTGRES_PORT", port)
+
+	out, err := runDoctor(t, healthyDocker())
+	if err != nil {
+		// A port in use is a warning, not a failure: the stack may not be one
+		// the user is about to start.
+		t.Fatalf("doctor: %v\n%s", err, out)
+	}
+	if !strings.Contains(out, port) || !strings.Contains(out, "in use") {
+		t.Errorf("doctor does not report %s as in use:\n%s", port, out)
+	}
+	if !strings.Contains(out, "1 warning") {
+		t.Errorf("the summary does not acknowledge the warning:\n%s", out)
+	}
+}
+
+// A machine with an NVIDIA driver but no nvidia runtime in docker is a setup
+// someone meant to finish; a machine with neither is just a machine.
+func TestDoctorGPU(t *testing.T) {
+	t.Setenv(config.HomeEnv, t.TempDir())
+
+	f := healthyDocker()
+	f.out["info --format {{json .Runtimes}}"] = `{"nvidia":{"path":"nvidia-container-runtime"},"runc":{}}`
+
+	out, err := runDoctor(t, f)
+	if err != nil {
+		t.Fatalf("doctor: %v\n%s", err, out)
+	}
+	if !strings.Contains(out, "nvidia runtime available") {
+		t.Errorf("doctor does not report the nvidia runtime:\n%s", out)
+	}
+}
+
+// Every `spinup up` passes --wait-timeout, so a compose plugin without it is
+// worth saying out loud before the first command fails.
+func TestDoctorReportsComposeWithoutWaitTimeout(t *testing.T) {
+	t.Setenv(config.HomeEnv, t.TempDir())
+
+	f := healthyDocker()
+	f.out["compose up --help"] = "Usage: docker compose up\n  --wait\n"
+
+	out, err := runDoctor(t, f)
+	if err != nil {
+		t.Fatalf("doctor: %v\n%s", err, out)
+	}
+	if !strings.Contains(out, "--wait-timeout") {
+		t.Errorf("doctor does not mention the missing flag:\n%s", out)
 	}
 }
