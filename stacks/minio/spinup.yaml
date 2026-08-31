@@ -1,0 +1,15 @@
+name: minio
+description: MinIO — S3-compatible object storage with a web console
+category: storage
+primary: minio
+cli: mc ls local
+gui:
+  service: minio
+  url: http://localhost:${MINIO_CONSOLE_PORT}
+  login: ${MINIO_ROOT_USER} / ${MINIO_ROOT_PASSWORD}
+url: http://localhost:${MINIO_PORT}
+ports:
+  - name: MINIO_PORT
+    default: 9000
+  - name: MINIO_CONSOLE_PORT
+    default: 8086

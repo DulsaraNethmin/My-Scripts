@@ -1,0 +1,14 @@
+name: mailpit
+description: Mailpit — catches every mail your app sends, with a web inbox
+category: tooling
+primary: mailpit
+gui:
+  service: mailpit
+  url: http://localhost:${MAILPIT_UI_PORT}
+  login: none
+url: smtp://localhost:${MAILPIT_SMTP_PORT}
+ports:
+  - name: MAILPIT_SMTP_PORT
+    default: 1025
+  - name: MAILPIT_UI_PORT
+    default: 8085

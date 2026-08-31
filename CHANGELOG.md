@@ -168,6 +168,29 @@ defaults, and GUIs on non-colliding `80xx` ports recorded in `docs/PORTS.md`.
   it (PLAN §7.6). Binaries print a `v`-prefixed version so what
   `spinup version` shows is exactly the tag it came from.
 
+### Added — catalog v2 (Phase 5)
+
+- `mailpit` — an SMTP server that catches every message an app sends and shows
+  it in a web inbox on `8085`, so nothing can reach a real person. It accepts
+  any username and password over an unencrypted connection, because a mail
+  catcher that refuses the frameworks that insist on auth is one you spend an
+  afternoon on, and it keeps its inbox in a volume rather than in memory,
+  which is what the image does by default.
+- `minio` — S3-compatible object storage on `9000` with its console on `8086`.
+  The root password is `spinup-secret` rather than the catalog's usual
+  `spinup`: MinIO refuses to start with fewer than eight characters. `spinup
+  cli minio` runs `mc ls local` inside the container, which needed the alias
+  the image ships to be given credentials — it is anonymous by default, enough
+  for the healthcheck and not enough to list a bucket.
+- `adminer` — one PHP page that administers every database you run, on `8084`.
+  Its login form starts on `host.docker.internal`, with the `host-gateway`
+  entry that makes that name resolve on Linux too, so it reaches the databases
+  spinup publishes on your machine rather than looking inside its own
+  container.
+
+All three serve their web interface from the primary container, so none has a
+`gui` profile, and all three are in the CI smoke matrix.
+
 ### Added — connect commands (Phase 4)
 
 - `spinup shell <stack> [service]` opens a shell in a running container —

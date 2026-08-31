@@ -1,0 +1,23 @@
+name: spinup-adminer
+
+services:
+  adminer:
+    image: adminer:5
+    restart: unless-stopped
+    environment:
+      # The server the login form starts on. spinup's databases each run in
+      # their own compose project and network, so the way to reach them from
+      # here is the host, not a container name.
+      ADMINER_DEFAULT_SERVER: ${ADMINER_DEFAULT_SERVER:-host.docker.internal}
+    ports:
+      - "${ADMINER_PORT:-8084}:8080"
+    extra_hosts:
+      # Docker Desktop defines host.docker.internal already; Linux does not,
+      # and without this the default server above would resolve to nothing.
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8080/"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 5s
