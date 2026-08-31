@@ -39,4 +39,4 @@
 5.6|Phase 5 — Catalog v2|done|task/5.6-stacks-f|stacks: opensearch, monitoring, keycloak
 6.1|Phase 6 — Docs|done|task/6.1-readme|README: install one-liner, demo GIF, stack table, FAQ
 6.2|Phase 6 — Docs|done|task/6.2-contributing|CONTRIBUTING.md, issue templates
-6.3|Phase 6 — Docs|wip|task/6.3-site|Optional: mkdocs site on GitHub Pages
+6.3|Phase 6 — Docs|done|task/6.3-site|Optional: mkdocs site on GitHub Pages
