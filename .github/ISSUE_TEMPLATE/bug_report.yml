@@ -1,0 +1,72 @@
+name: Bug report
+description: Something in the CLI or a stack does not work
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before filing: `spinup doctor` catches most first-run problems — a port
+        already taken, Compose v1 instead of v2, the daemon not running.
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you ran, what you expected, and what you got instead.
+      placeholder: |
+        $ spinup up postgres
+        ... the error
+    validations:
+      required: true
+
+  - type: input
+    id: stack
+    attributes:
+      label: Which stack
+      description: Leave blank if this is not about one.
+      placeholder: postgres
+
+  - type: textarea
+    id: doctor
+    attributes:
+      label: spinup doctor
+      description: The full output. It reports the Docker and Compose versions and any port collisions.
+      render: shell
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: spinup version
+      placeholder: v1.1.0
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - macOS (Docker Desktop)
+        - Linux (Docker Engine)
+        - Linux (Docker Desktop)
+        - Windows (Docker Desktop, WSL 2)
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: "`spinup logs <stack>` — the last 50 lines are usually enough."
+      render: shell
+
+  - type: checkboxes
+    id: checked
+    attributes:
+      label: Checked
+      options:
+        - label: "`spinup doctor` reports no problem that explains this"
+        - label: The stack's own README does not already describe this behaviour

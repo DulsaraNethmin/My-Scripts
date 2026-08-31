@@ -1,0 +1,52 @@
+name: Stack request
+description: Ask for a service to be added to the catalog
+labels: ["stack"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A stack is four files and no Go code — if you want to write it
+        yourself, [CONTRIBUTING.md](../blob/main/CONTRIBUTING.md) is the guide
+        and this issue is a good place to claim it first.
+
+  - type: input
+    id: service
+    attributes:
+      label: Which service
+      placeholder: Elasticsearch, Temporal, Ollama, …
+    validations:
+      required: true
+
+  - type: input
+    id: image
+    attributes:
+      label: Docker image and tag
+      description: A tag that exists — `docker manifest inspect` it.
+      placeholder: docker.elastic.co/elasticsearch/elasticsearch:8.15.0
+    validations:
+      required: true
+
+  - type: textarea
+    id: why
+    attributes:
+      label: What you would use it for
+      description: >
+        What makes it worth one command rather than a compose file you already
+        have. The stacks that earn their place are the ones that are fiddly to
+        get right the first time.
+    validations:
+      required: true
+
+  - type: input
+    id: gui
+    attributes:
+      label: Web GUI
+      description: Its own container, served by the service itself, or none?
+      placeholder: Kibana, its own container
+
+  - type: checkboxes
+    id: offer
+    attributes:
+      label: Would you write it?
+      options:
+        - label: I would like to open the pull request myself
