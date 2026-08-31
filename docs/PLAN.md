@@ -208,6 +208,7 @@ spinup/
 │   ├── rabbitmq/  kafka/  nats/  minio/  mailpit/  localstack/
 │   ├── portainer/  traefik/  monitoring/  keycloak/  vault/  adminer/
 │   ├── nginx-static/  nginx-proxy-manager/
+│   ├── qdrant/  chroma/  pgvector/  weaviate/
 │   └── pytorch/
 ├── install.sh               # curl | sh installer (detects OS/arch, fetches latest release)
 ├── install.ps1              # Windows equivalent

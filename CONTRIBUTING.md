@@ -82,7 +82,7 @@ the primary — that is what makes it optional.
 
 A GUI **served by the primary service itself** — Fauxton, Neo4j Browser,
 Portainer, Vault's UI, ClickHouse's Play — has nothing to gate, and correctly
-declares no profile. Fourteen of the twenty-five stacks are like that against
+declares no profile. Fifteen of the twenty-nine stacks are like that against
 eight that are not, so a rule derived from `stacks/postgres` alone rejects most
 of the catalog.
 

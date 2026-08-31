@@ -42,6 +42,7 @@ nav:
   - Catalog:
       - Every stack: stacks/index.md
       - adminer: stacks/adminer.md
+      - chroma: stacks/chroma.md
       - clickhouse: stacks/clickhouse.md
       - couchdb: stacks/couchdb.md
       - kafka: stacks/kafka.md
@@ -59,13 +60,16 @@ nav:
       - nginx-proxy-manager: stacks/nginx-proxy-manager.md
       - nginx-static: stacks/nginx-static.md
       - opensearch: stacks/opensearch.md
+      - pgvector: stacks/pgvector.md
       - portainer: stacks/portainer.md
       - postgres: stacks/postgres.md
       - pytorch: stacks/pytorch.md
+      - qdrant: stacks/qdrant.md
       - rabbitmq: stacks/rabbitmq.md
       - redis: stacks/redis.md
       - traefik: stacks/traefik.md
       - vault: stacks/vault.md
+      - weaviate: stacks/weaviate.md
   - Ports: ports.md
   - Contributing: contributing.md
   - Design: design.md

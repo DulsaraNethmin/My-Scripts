@@ -9,6 +9,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Four vector databases, taking the catalog to 29 stacks:
+
+  | Stack | What you get | Ports |
+  | --- | --- | --- |
+  | `qdrant` | Qdrant 1.19 with its built-in web dashboard | 6333, 6334 |
+  | `chroma` | Chroma 1.5, HTTP API only | 8000 |
+  | `pgvector` | PostgreSQL 17 with the pgvector extension | 5433 |
+  | `weaviate` | Weaviate 1.39 with REST and gRPC | 9080, 50051 |
+
+  None of them has a GUI container of its own, so the `80xx` range is
+  untouched and none declares a `gui` profile: qdrant serves its dashboard
+  from the primary container, and the other three have no web interface.
+
+  `pgvector` installs the extension for you on first start, in `template1` as
+  well as the stack's own database, so a database created later inherits it.
+  `weaviate` moves to `9080` because pgAdmin has `8080`, and pins its raft node
+  name — without that it never becomes ready after the first `spin down`.
+
 - `spin up` checks host ports before it starts anything, and says what holds
   one. A collision used to surface as compose's own failure — a daemon error
   about "programming external connectivity", printed twice, with the port
