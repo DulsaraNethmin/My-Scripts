@@ -95,3 +95,7 @@ to collide with something outside spinup; `WEAVIATE_GRPC_PORT` moves it.
 
 `pgvector` is a second PostgreSQL and cannot have `5432`, so it takes `5433` —
 the same offset-with-a-reason as `mariadb` on `3307`.
+
+`jobzkraper` claims nothing in either table: it is a worker stack — a
+scheduled scraper with no listening service at all, consumed through
+`spin cli jobzkraper -- …`.

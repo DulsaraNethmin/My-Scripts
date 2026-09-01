@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `jobzkraper`, the catalog's first **worker stack** — and the `worker: true`
+  schema that admits it. Jobzkraper scrapes job postings from LinkedIn,
+  Greenhouse, Lever, Ashby and Indeed into a reviewable queue on a schedule
+  (image: `ghcr.io/dulsaranethmin/jobzkraper`). It binds no host port at all:
+  a worker stack has no `url` and no `ports`, and its `cli` is mandatory
+  instead, because `spin cli jobzkraper -- …` is the only way in. First boot
+  idles in a healthy setup mode until `spin cli jobzkraper -- init` has
+  written a config, so `up --wait` is not a crash-loop on a scraper that does
+  not know what to scrape yet.
+
 - Four vector databases, taking the catalog to 29 stacks:
 
   | Stack | What you get | Ports |

@@ -45,6 +45,7 @@ nav:
       - chroma: stacks/chroma.md
       - clickhouse: stacks/clickhouse.md
       - couchdb: stacks/couchdb.md
+      - jobzkraper: stacks/jobzkraper.md
       - kafka: stacks/kafka.md
       - keycloak: stacks/keycloak.md
       - localstack: stacks/localstack.md

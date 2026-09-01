@@ -55,6 +55,12 @@ type Stack struct {
 	URL         string   `yaml:"url"` // connection string, printed by `spin url`
 	Ports       []Port   `yaml:"ports"`
 
+	// Worker marks a stack that binds no host port at all — a scheduler or
+	// background job that is consumed through its own CLI rather than over a
+	// socket. It lifts the url and ports requirements and requires cli
+	// instead: with nothing to connect to, `spin cli` is the only way in.
+	Worker bool `yaml:"worker"`
+
 	// Profiles are the Compose profiles the stack defines. Anything behind a
 	// profile is off unless it is selected.
 	Profiles []string `yaml:"profiles"`
@@ -164,12 +170,17 @@ func (s *Stack) validate(dir string) error {
 	}
 	// url and at least one port are required by scripts/lint-stacks.sh too.
 	// The two validators have to agree, or a stack passes CI and then fails in
-	// the CLI, or the other way round.
-	if s.URL == "" {
+	// the CLI, or the other way round. A worker stack is the exception in
+	// both: it binds nothing, so there is no address to print and no port to
+	// claim — but its cli becomes required, or the stack is unreachable.
+	if s.URL == "" && !s.Worker {
 		bad("url is required — it is what `spin url` prints")
 	}
-	if len(s.Ports) == 0 {
+	if len(s.Ports) == 0 && !s.Worker {
 		bad("ports is required — a service nothing can connect to is not a stack")
+	}
+	if s.Worker && s.CLI == "" {
+		bad("worker: true requires cli — with no port to connect to, the stack's own client is the only way in")
 	}
 
 	seen := map[string]bool{}

@@ -44,7 +44,14 @@ for dir in "$STACKS"/*/; do
   if [ -f "$meta" ]; then
     declared="$(awk -F': *' '/^name:/{print $2; exit}' "$meta")"
     [ "$declared" = "$name" ] || fail "$name" "spinup.yaml name: is '$declared', expected '$name'"
-    for k in description category primary url ports; do
+    # A worker stack binds no host port: there is no url to print and no
+    # port to claim, and its cli is the only way in. internal/catalog
+    # applies the same exception — change one and change the other.
+    required="description category primary url ports"
+    if grep -qE '^worker: *true' "$meta"; then
+      required="description category primary cli"
+    fi
+    for k in $required; do
       grep -q "^$k:" "$meta" || fail "$name" "spinup.yaml missing key: $k"
     done
     cat="$(awk -F': *' '/^category:/{print $2; exit}' "$meta")"
@@ -76,9 +83,13 @@ for dir in "$STACKS"/*/; do
       grep -qF "\${$v" "$compose" || fail "$name" "$v declared in .env.example but unused in compose.yaml"
     done < <(grep -oE '^[A-Z_][A-Z0-9_]*=' "$envex" | tr -d '=')
 
+    #    A commented `# VAR=` declaration documents an optional variable that
+    #    is empty until the user uncomments it (jobzkraper's secrets) — the
+    #    forward check above still ignores it, so it need not appear in
+    #    compose, but here it counts as documented.
     while IFS= read -r v; do
       [ -n "$v" ] || continue
-      grep -qE "^$v=" "$envex" || fail "$name" "\${$v} used in compose.yaml but not documented in .env.example"
+      grep -qE "^(# *)?$v=" "$envex" || fail "$name" "\${$v} used in compose.yaml but not documented in .env.example"
     done < <(perl -ne 'while (/(?<!\$)\$\{([A-Z_][A-Z0-9_]*)[:}]/g) { print "$1\n" }' "$compose" | sort -u)
   fi
 

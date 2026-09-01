@@ -1,0 +1,61 @@
+name: spinup-jobzkraper
+
+services:
+  jobzkraper:
+    image: ghcr.io/dulsaranethmin/jobzkraper:0.1.0
+    restart: unless-stopped
+    # Two subprocess trees live in here — the scheduler's jobs and the JobSpy
+    # sidecar — and something has to reap them when they die mid-run.
+    init: true
+    # First boot has nothing to run: the scraper's config is personal and is
+    # written interactively by `spin cli jobzkraper -- init`. Until it exists,
+    # `schedule` would (correctly) refuse to start and the container would
+    # crash-loop — so an unconfigured container waits and says what to do
+    # instead. Once /config/config.yaml exists this is exactly `schedule`.
+    # No $ may appear in the script below: compose would interpolate it.
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        if [ -f /config/config.yaml ]; then
+          exec /app/.venv/bin/jobscraper schedule
+        fi
+        echo "jobzkraper is waiting for its first-time setup:"
+        echo ""
+        echo "  spin cli jobzkraper -- init        # answer the questions"
+        echo "  spin restart jobzkraper            # the scheduler takes it from there"
+        echo ""
+        echo "and optionally, for CV-tailoring later on:"
+        echo ""
+        echo "  docker cp your-cv.docx spinup-jobzkraper-jobzkraper-1:/config/cv.docx"
+        echo ""
+        exec sleep infinity
+    environment:
+      # The scheduler fires on local wall clock; say whose clock.
+      TZ: ${TZ:-UTC}
+      JOBSCRAPER_SCRAPE_AT: ${JOBSCRAPER_SCRAPE_AT:-}
+      JOBSCRAPER_DIGEST_AT: ${JOBSCRAPER_DIGEST_AT:-}
+      NORDVPN_SOCKS_USER: ${NORDVPN_SOCKS_USER:-}
+      NORDVPN_SOCKS_PASS: ${NORDVPN_SOCKS_PASS:-}
+      JOBSCRAPER_HOME_IP: ${JOBSCRAPER_HOME_IP:-}
+      JOBSCRAPER_DIGEST_WEBHOOK: ${JOBSCRAPER_DIGEST_WEBHOOK:-}
+    volumes:
+      # config.yaml and candidate.yaml (written by init) and your cv.docx.
+      # A named volume, NOT a bind into this directory: `spin reset` deletes
+      # the stack directory, and your configuration must survive that.
+      - jobzkraper-config:/config
+      # The database, the response cache, the digest, application artifacts.
+      - jobzkraper-data:/data
+    healthcheck:
+      # The image's own healthcheck is `doctor --quiet`, which calls an
+      # unconfigured container unhealthy — true, but first-time setup happens
+      # through THIS container, so waiting-for-init counts as healthy here.
+      # Once config.yaml exists, doctor's verdict is the verdict.
+      test: ["CMD-SHELL", "test ! -f /config/config.yaml || /app/.venv/bin/jobscraper doctor --quiet"]
+      interval: 60s
+      timeout: 15s
+      retries: 3
+      start_period: 30s
+
+volumes:
+  jobzkraper-config:
+  jobzkraper-data:
