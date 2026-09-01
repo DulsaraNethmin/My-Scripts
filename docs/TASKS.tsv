@@ -46,3 +46,4 @@
 8.1|Phase 8 — Catalog v3|done|task/8.1-stacks-vector-a|stacks: qdrant, chroma (+ docs/PORTS.md claims for all four)
 8.2|Phase 8 — Catalog v3|done|task/8.2-stacks-vector-b|stacks: pgvector (init CREATE EXTENSION), weaviate (CLUSTER_HOSTNAME)
 8.3|Phase 8 — Catalog v3|done|task/8.3-catalog-docs|README catalog tables, mkdocs nav, stale 25-stack counts
+9.1|Phase 9 — Worker stacks|wip|task/9.1-stack-jobzkraper|Worker-stack schema (worker: true) + stacks/jobzkraper wrapping the public image
