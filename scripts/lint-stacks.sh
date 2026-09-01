@@ -83,9 +83,13 @@ for dir in "$STACKS"/*/; do
       grep -qF "\${$v" "$compose" || fail "$name" "$v declared in .env.example but unused in compose.yaml"
     done < <(grep -oE '^[A-Z_][A-Z0-9_]*=' "$envex" | tr -d '=')
 
+    #    A commented `# VAR=` declaration documents an optional variable that
+    #    is empty until the user uncomments it (jobzkraper's secrets) — the
+    #    forward check above still ignores it, so it need not appear in
+    #    compose, but here it counts as documented.
     while IFS= read -r v; do
       [ -n "$v" ] || continue
-      grep -qE "^$v=" "$envex" || fail "$name" "\${$v} used in compose.yaml but not documented in .env.example"
+      grep -qE "^(# *)?$v=" "$envex" || fail "$name" "\${$v} used in compose.yaml but not documented in .env.example"
     done < <(perl -ne 'while (/(?<!\$)\$\{([A-Z_][A-Z0-9_]*)[:}]/g) { print "$1\n" }' "$compose" | sort -u)
   fi
 

@@ -7,7 +7,7 @@ one command, on macOS, Linux and Windows, using Docker Compose underneath.
 spin up postgres        # Postgres 16 + pgAdmin, running in ~10s
 ```
 
-No cloning, no editing YAML, no remembering ports and passwords. **29 stacks**,
+No cloning, no editing YAML, no remembering ports and passwords. **30 stacks**,
 each pinned to a real version, healthchecked, and able to run beside every
 other one.
 
@@ -117,7 +117,7 @@ Several stacks at once work everywhere a stack is taken:
 ## The catalog
 
 Every stack keeps its service on its well-known port and puts any web GUI in
-the `80xx` range, so all 29 can run at the same time. A `gui` in the last
+the `80xx` range, so all 30 can run at the same time. A `gui` in the last
 column means the web interface is a container of its own and starts only with
 `--gui`; otherwise it is the service itself and is always there.
 
@@ -168,6 +168,7 @@ column means the web interface is a container of its own and starts only with
 | `vault` | HashiCorp Vault in dev mode, with the built-in UI | 8200 | — |
 | `keycloak` | Keycloak 26 — OAuth2, OIDC, SAML — on its own Postgres | 8096 | — |
 | `monitoring` | Prometheus and Grafana, with a provisioned dashboard | 9090, 8095 | `gui` |
+| `jobzkraper` | Job postings scraped into a reviewable queue, twice a day | — | — |
 
 ### ML
 

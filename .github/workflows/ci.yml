@@ -143,6 +143,10 @@ jobs:
           - { stack: chroma,              profiles: "" }
           - { stack: pgvector,            profiles: "" }
           - { stack: weaviate,            profiles: "" }
+          # The one worker stack: no ports, and first boot is a setup mode
+          # that idles healthy until it is given a config — which is exactly
+          # what --wait sees here, plus a 664 MB pull from GHCR.
+          - { stack: jobzkraper,          profiles: "" }
     steps:
       - uses: actions/checkout@v4
 
