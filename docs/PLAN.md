@@ -175,7 +175,10 @@ gpu:                          # what `up --gpu` swaps in
 ```
 
 `name`, `description`, `category`, `primary`, `url` and at least one port are required;
-`name` must match the directory. A `gui` whose service is a *separate* container must be
+`name` must match the directory. The exception is a stack that declares `worker: true` —
+a scheduler or background job that binds no host port at all (`stacks/jobzkraper`), where
+`url` and `ports` fall away and `cli` becomes required instead: with nothing to connect
+to, `spin cli <stack> -- …` is the only way in. A `gui` whose service is a *separate* container must be
 behind the `gui` profile — that is what makes it optional. A `gui` served by the primary
 service itself (nginx, Nginx Proxy Manager, JupyterLab) has nothing to gate and declares
 no profile. `internal/catalog` and `scripts/lint-stacks.sh` enforce the same rules, and

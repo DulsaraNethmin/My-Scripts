@@ -44,7 +44,14 @@ for dir in "$STACKS"/*/; do
   if [ -f "$meta" ]; then
     declared="$(awk -F': *' '/^name:/{print $2; exit}' "$meta")"
     [ "$declared" = "$name" ] || fail "$name" "spinup.yaml name: is '$declared', expected '$name'"
-    for k in description category primary url ports; do
+    # A worker stack binds no host port: there is no url to print and no
+    # port to claim, and its cli is the only way in. internal/catalog
+    # applies the same exception — change one and change the other.
+    required="description category primary url ports"
+    if grep -qE '^worker: *true' "$meta"; then
+      required="description category primary cli"
+    fi
+    for k in $required; do
       grep -q "^$k:" "$meta" || fail "$name" "spinup.yaml missing key: $k"
     done
     cat="$(awk -F': *' '/^category:/{print $2; exit}' "$meta")"

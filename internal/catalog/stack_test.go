@@ -140,6 +140,10 @@ func TestParseStackRejects(t *testing.T) {
 			"name: x\ndescription: d\ncategory: web\nprimary: p\nurl: http://localhost\n",
 			"ports is required",
 		},
+		"worker without a cli": {
+			"name: x\ndescription: d\ncategory: tooling\nprimary: p\nworker: true\n",
+			"worker: true requires cli",
+		},
 		"not yaml": {"name: [unclosed\n", "yaml"},
 	} {
 		t.Run(name, func(t *testing.T) {
@@ -196,6 +200,29 @@ profiles: []
 	}
 	if len(s.Profiles) != 0 {
 		t.Errorf("profiles = %v, want none", s.Profiles)
+	}
+}
+
+// stacks/jobzkraper is the stack that shaped worker: a scheduler that binds
+// no host port at all, consumed through its own CLI over `spin cli`. There is
+// no address to print and no port to claim, so neither is required of it.
+func TestWorkerStackNeedsNoURLOrPorts(t *testing.T) {
+	const y = `name: jobzkraper
+description: a scraper on its own schedule
+category: tooling
+primary: jobzkraper
+worker: true
+cli: /app/.venv/bin/jobscraper
+`
+	s, err := catalog.ParseStack("jobzkraper", []byte(y))
+	if err != nil {
+		t.Fatalf("ParseStack: %v", err)
+	}
+	if !s.Worker {
+		t.Error("worker: true was not parsed")
+	}
+	if len(s.Ports) != 0 || s.URL != "" {
+		t.Errorf("parsed %+v", s)
 	}
 }
 
