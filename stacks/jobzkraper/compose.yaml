@@ -2,7 +2,7 @@ name: spinup-jobzkraper
 
 services:
   jobzkraper:
-    image: ghcr.io/dulsaranethmin/jobzkraper:0.1.0
+    image: ghcr.io/dulsaranethmin/jobzkraper:0.1.1
     restart: unless-stopped
     # Two subprocess trees live in here — the scheduler's jobs and the JobSpy
     # sidecar — and something has to reap them when they die mid-run.
