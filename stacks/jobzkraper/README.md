@@ -90,6 +90,3 @@ carry the load. That is a property of the addresses, not a knob in this stack.
   TTY, so use `-- init --defaults` there.
 - The image is pinned to a release tag. New Jobzkraper releases arrive as
   spinup updates, not by `:latest` drifting under you overnight.
-- `jobscraper` is not on `PATH` inside the 0.1.0 image — the stack always
-  calls `/app/.venv/bin/jobscraper` for you, but if you `spin shell` in,
-  you need the full path too.

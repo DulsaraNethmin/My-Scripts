@@ -3,7 +3,6 @@ description: Jobzkraper — job postings scraped into a reviewable queue, twice 
 category: tooling
 primary: jobzkraper
 # A worker: binds no host port, so there is no url and no ports — the CLI is
-# the way in. The image's venv is not on PATH (until its v0.1.1), hence the
-# absolute path.
+# the way in.
 worker: true
-cli: /app/.venv/bin/jobscraper
+cli: jobscraper

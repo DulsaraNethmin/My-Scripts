@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- `jobzkraper` now runs image `0.1.1`, whose CLI is on `PATH` — `spin cli
+  jobzkraper` calls `jobscraper` by name, and so can you from `spin shell`.
+
+## [1.5.0] - 2026-09-02
+
 ### Added
 
 - `jobzkraper`, the catalog's first **worker stack** — and the `worker: true`
