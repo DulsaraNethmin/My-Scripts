@@ -80,8 +80,12 @@ sha256() {
 # json_field pulls one string value out of a JSON object. The releases API
 # answers with a single object and this script needs two fields out of it;
 # depending on jq being installed would be a worse trade than this.
+#
+# api.github.com pretty-prints: `"tag_name": "v1.5.1"`, with a space after the
+# colon. The pattern has to allow that, or every install dies with "no release
+# for 'latest'" — install_test.go serves the same shape so that cannot pass CI.
 json_field() {
-	tr ',' '\n' | sed -n 's/.*"'"$1"'":"\([^"]*\)".*/\1/p' | head -n 1
+	tr ',' '\n' | sed -n 's/.*"'"$1"'"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -n 1
 }
 
 platform() {
@@ -155,10 +159,11 @@ number=${tag#v}
 archive="spinup_${number}_${target}.tar.gz"
 
 # Splitting on commas puts each asset's download URL on its own line, which is
-# enough structure to pick one out without a JSON parser.
+# enough structure to pick one out without a JSON parser. The closing quote is
+# part of the match: `/checksums.txt` alone is a prefix of `/checksums.txt.sig`.
 asset_url() {
-	printf '%s' "$release" | tr ',' '\n' | grep browser_download_url | grep -F "/$1" |
-		sed -n 's/.*"browser_download_url":"\([^"]*\)".*/\1/p' | head -n 1
+	printf '%s' "$release" | tr ',' '\n' | grep browser_download_url | grep -F "/$1\"" |
+		sed -n 's/.*"browser_download_url"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -n 1
 }
 
 archive_url=$(asset_url "$archive")
@@ -171,8 +176,10 @@ tmp=$(mktemp -d)
 trap 'rm -rf "$tmp"' EXIT INT TERM
 
 say "${DIM}downloading${RESET} $archive ($tag)"
-download "$archive_url" "$tmp/$archive"
-download "$checksums_url" "$tmp/checksums.txt"
+# Under set -e a failed curl would end the script with nothing but curl's own
+# line, which reads like a bug in the installer when it is usually the network.
+download "$archive_url" "$tmp/$archive" || die "cannot download $archive_url"
+download "$checksums_url" "$tmp/checksums.txt" || die "cannot download $checksums_url"
 
 want=$(grep " $archive\$" "$tmp/checksums.txt" | cut -d' ' -f1 | head -n 1)
 [ -n "$want" ] || die "checksums.txt has no entry for $archive"

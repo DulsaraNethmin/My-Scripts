@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- `install.sh` failed everywhere with `DulsaraNethmin/spinup has no release
+  for 'latest'`. The releases API pretty-prints its JSON with a space after
+  each colon and the script's parser only knew the compact form; the test
+  fixture served the compact form too, so CI never saw it. The asset lookup
+  now also matches whole names, so `checksums.txt` can no longer resolve to
+  `checksums.txt.sig`. `install.ps1` and `spin update` were never affected.
+
 ## [1.5.1] - 2026-09-02
 
 ### Changed

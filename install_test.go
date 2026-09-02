@@ -73,10 +73,35 @@ func serveRelease(t *testing.T, tag, name string, archive []byte, checksums stri
 		fmt.Fprint(w, checksums)
 	})
 	mux.HandleFunc("/repos/test/spinup/releases/latest", func(w http.ResponseWriter, _ *http.Request) {
-		fmt.Fprintf(w, `{"tag_name":%q,"assets":[
-			{"name":%q,"browser_download_url":"%s/download/%s"},
-			{"name":"checksums.txt","browser_download_url":"%s/download/checksums.txt"}]}`,
-			tag, name, srv.URL, name, srv.URL)
+		// The shape api.github.com actually answers with: pretty-printed, a
+		// space after every colon, one field per line. install.sh parses it
+		// with sed, and a compact fixture here once let a pattern that only
+		// knew `"tag_name":"` pass CI while every real install failed with
+		// "no release for 'latest'". The signature and certificate are listed
+		// ahead of checksums.txt so a name match that is not anchored on the
+		// closing quote resolves checksums.txt to checksums.txt.pem instead.
+		fmt.Fprintf(w, `{
+  "tag_name": %q,
+  "assets": [
+    {
+      "name": "checksums.txt.pem",
+      "browser_download_url": "%s/download/checksums.txt.pem"
+    },
+    {
+      "name": "checksums.txt.sig",
+      "browser_download_url": "%s/download/checksums.txt.sig"
+    },
+    {
+      "name": %q,
+      "browser_download_url": "%s/download/%s"
+    },
+    {
+      "name": "checksums.txt",
+      "browser_download_url": "%s/download/checksums.txt"
+    }
+  ]
+}
+`, tag, srv.URL, srv.URL, name, srv.URL, name, srv.URL)
 	})
 
 	return srv
